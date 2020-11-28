@@ -6,10 +6,10 @@ def main():
     file = CompanyGenerator.get_top_40()
     share_codes = SensGetter.get_share_code(file)
     for code in share_codes:
-        url = f"https://www.profiledata.co.za/brokersites/businesslive/Controls/Toolbox/SensSearch/SSJSONdata.aspx?date=26%20Nov%202019&enddate=26%20Nov%202020&keyword=&sharecode={code}&sectorcode="
+        url = f"https://www.profiledata.co.za/brokersites/businesslive/Controls/Toolbox/SensSearch/SSJSONdata.aspx?date=26%20Nov%202015&enddate=26%20Nov%202020&keyword=&sharecode={code}&sectorcode="
 
         sens_ids, sens_titles, sens_dates = SensGetter.get_sens_id(SensGetter.get_html(url))
-        fs = open(f"train_data/raw_sens_data_{code}.csv", "w")
+        fs = open(f"train_data/raw_sens_data_{code}_5yrs.csv", "w")
         csv_writer = csv.writer(fs)
 
         csv_writer.writerow(["sens_title","Date","text"])
