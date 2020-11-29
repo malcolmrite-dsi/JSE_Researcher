@@ -82,8 +82,8 @@ class SensGetter():
             start = text.find(title) + len(title)
             stop = text.find("Produced by the JSE SENS Department")
             text = text[start:stop]
-            if text.find("Disclaimer -"):
-                stop2 = text.find("Disclaimer -")
+            if text.find("Sponsor"):
+                stop2 = text.find("Sponsor")
                 text = text[:stop2]
 
         except:
