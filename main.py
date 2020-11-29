@@ -10,8 +10,8 @@ def get_sens_in_app(code, time_period):
     url = f"https://www.profiledata.co.za/brokersites/businesslive/Controls/Toolbox/SensSearch/SSJSONdata.aspx?date=01%20Jan%20{time_period}&enddate=01%20Dec%20{time_period}&keyword=&sharecode={code}&sectorcode="
 
     sens_ids, sens_titles, sens_dates = SensGetter.get_sens_id(SensGetter.get_html(url))
-    for sens in sens_ids:
-        text = SensGetter.get_sens_text(sens)
+    for  i, sens in enumerate(sens_ids):
+        text = SensGetter.get_sens_text(sens, sens_titles[i])
         st.write(text)
 
 

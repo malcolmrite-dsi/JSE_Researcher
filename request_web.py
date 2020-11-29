@@ -72,15 +72,16 @@ class SensGetter():
                 company_list.append(company.text.strip())
         return company_list
 
-    def get_sens_text(id):
+    def get_sens_text(id, title):
         url = f'https://www.profiledata.co.za/BrokerSites/BusinessLive/SENS.aspx?id={id}'
         html = SensGetter.get_html(url)
         soup = BeautifulSoup(html, 'lxml')
 
         try:
             text = soup.find('pre').text.strip()
+            start = text.find(title) + len(title)
             stop = text.find("Produced by the JSE SENS Department")
-            text = text[:stop]
+            text = text[start:stop]
             if text.find("Disclaimer -"):
                 stop2 = text.find("Disclaimer -")
                 text = text[:stop2]
