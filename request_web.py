@@ -85,6 +85,9 @@ class SensGetter():
             if text.find("Sponsor"):
                 stop2 = text.find("Sponsor")
                 text = text[:stop2]
+            if text.find("Ends."):
+                stop3 = text.find("Ends.")
+                text = text[:stop3]
 
         except:
             text = ''
