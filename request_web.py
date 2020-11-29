@@ -79,6 +79,8 @@ class SensGetter():
 
         try:
             text = soup.find('pre').text.strip()
+            stop = text.find("Produced by the JSE SENS Department")
+            text = text[:stop]
         except:
             text = ''
             print(url)
