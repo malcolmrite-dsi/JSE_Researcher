@@ -13,6 +13,7 @@ def get_sens_in_app(code, time_period):
     for  i, sens in enumerate(sens_ids):
         text = SensGetter.get_sens_text(sens, sens_titles[i])
         st.write(text)
+        st.write("-----------------")
 
 
 def main():
