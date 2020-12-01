@@ -22,16 +22,29 @@ def get_sens_training_data():
 
         fs.close()
 
+
+
+
 def get_share_links(pg):
     url = f"https://za.investing.com/stock-screener/?sp=country::110|sector::a|industry::a|equityType::a%3Ename_trans;{pg}"
     links = NewsGetter.get_company_links(NewsGetter.get_html(url))
 
     return links
 
-def get_train_headlines():
+def get_train_headlines(term):
     url = "https://www.news24.com/news24/search?query=ABSA"
     links, headlines = NewsGetter.get_news_headlines(NewsGetter.get_html(url))
-    return headlines, links
+    fs = open(f"train_data/raw_headline_data_{term}.csv", "w")
+    csv_writer = csv.writer(fs)
+
+    csv_writer.writerow(["headline","link"])
+
+    for i, sens in enumerate(sens_ids):
+        text = SensGetter.get_sens_text(sens)
+
+        csv_writer.writerow([sens_titles[i], sens_dates[i] , text])
+
+    fs.close()
 
 def main():
     print(get_train_headlines())
