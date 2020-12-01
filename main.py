@@ -1,5 +1,6 @@
 
 from request_web import SensGetter
+from request_web import NewsGetter
 import re
 import streamlit as st
 #http://196.30.126.229/V2/Controls/News/NewsList/NLJSONdata.aspx?jsecode=IMP&type=sens&filter=&search=
