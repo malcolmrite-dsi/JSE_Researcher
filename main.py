@@ -43,13 +43,6 @@ def main():
             get_sens_in_app(sharecode, time_period)
 
 
-    for sens in sens_ids:
-        print((sens))
-
-    for title in sens_titles:
-        print((title))
-
-    for date in sens_dates:
-        print(date)
+    
 if __name__ == '__main__':
     main()
