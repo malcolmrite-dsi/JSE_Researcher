@@ -14,7 +14,7 @@ def get_sens_in_app(code, time_period):
     else:
         loopEnd = 4
     for page in range(1,loopEnd):
-        url = f"https://www.news24.com/news24/search?query={term}&pageNumber={page}"
+        url = f"https://www.news24.com/news24/search?query={code}&pageNumber={page}"
 
         with st.spinner("Loading Headlines...."):
             links, headlines = NewsGetter.get_news_headlines(NewsGetter.get_html(url))
