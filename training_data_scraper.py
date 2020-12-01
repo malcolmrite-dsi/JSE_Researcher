@@ -1,8 +1,9 @@
 from request_web import SensGetter
 import csv
 from Company_List_Generator import CompanyGenerator
+from request_web import NewsGetter
 
-def main():
+def get_sens_training_data():
     file = CompanyGenerator.get_top_40()
     share_codes = SensGetter.get_share_code(file)
     for code in share_codes:
@@ -21,6 +22,19 @@ def main():
 
         fs.close()
 
+def get_share_links(pg):
+    url = f"https://za.investing.com/stock-screener/?sp=country::110|sector::a|industry::a|equityType::a%3Ename_trans;{pg}"
+    links = NewsGetter.get_company_links(NewsGetter.get_html(url))
+
+    return links
+
+def get_train_headlines():
+    url = "https://www.news24.com/news24/search?query=ABSA"
+    links, headlines = NewsGetter.get_news_headlines(NewsGetter.get_html(url))
+    return headlines, links
+
+def main():
+    print(get_train_headlines())
 
 if __name__ == '__main__':
     main()

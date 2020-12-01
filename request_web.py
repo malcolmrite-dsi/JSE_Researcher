@@ -3,7 +3,50 @@ from bs4 import BeautifulSoup
 import pandas as pd
 import re
 
+class NewsGetter():
+    """docstring for NewsGetter."""
+    def get_html(url):
+        response = requests.get(url)
+        if not response.ok:
+            print(f'Code: {response.status_code}, url: {url}')
+        return response.text
 
+
+    def get_company_links(html):
+        all_company_links = []
+
+        soup = BeautifulSoup(html, 'lxml')
+
+        #pattern = r'^ViewSENSWithHighlight'
+        companypage = soup.find_all('a', target_="_blank")
+
+        for share in companypage:
+            share = share.get("href")
+
+            link = "https://za.investing.com" + share
+
+            all_company_links.append(link)
+
+        return all_company_links
+
+    def get_news_headlines(html):
+        all_company_headlines = []
+        all_company_links = []
+        soup = BeautifulSoup(html, 'lxml')
+
+        #pattern = r'^ViewSENSWithHighlight'
+        newspage = soup.find_all('a', class_="article-item--url")
+
+        for headline in newspage:
+            newslink = headline.get("href")
+            headline = headline.get("aria-label")
+
+            link = newslink
+
+            all_company_links.append(link)
+            all_company_headlines.append(headline)
+
+        return all_company_links, all_company_headlines
 
 class SensGetter():
     def get_html(url):
