@@ -32,9 +32,9 @@ def get_share_links(pg):
     return links
 
 def get_train_headlines(term):
-    url = "https://www.news24.com/news24/search?query=ABSA"
+    url = f"https://www.news24.com/news24/search?query={term}&pageNumber=1"
     links, headlines = NewsGetter.get_news_headlines(NewsGetter.get_html(url))
-    fs = open(f"train_data/raw_headline_data_{term}.csv", "w")
+    '''fs = open(f"train_data/raw_headline_data_{term}.csv", "w")
     csv_writer = csv.writer(fs)
 
     csv_writer.writerow(["headline","link"])
@@ -44,10 +44,12 @@ def get_train_headlines(term):
 
         csv_writer.writerow([sens_titles[i], sens_dates[i] , text])
 
-    fs.close()
+    fs.close()'''
+    return headlines
+
 
 def main():
-    print(get_train_headlines())
+    print(get_train_headlines("Sasol"))
 
 if __name__ == '__main__':
     main()

@@ -14,9 +14,11 @@ def get_sens_in_app(code, time_period):
     else:
         loopEnd = 4
     for page in range(1,loopEnd):
-        url = f"https://www.news24.com/api/article/loadmore/search?searchquery={code}&pageNumber=1&pageSize=19&searchDomain=news24&breadcrumb=news24/search&isMobile=false"
+        url = f"https://www.news24.com/news24/search?query={term}&pageNumber={page}"
 
-        links, headlines = NewsGetter.get_news_headlines(NewsGetter.get_html(url))
+        with st.spinner("Loading Headlines...."):
+            links, headlines = NewsGetter.get_news_headlines(NewsGetter.get_html(url))
+
         for  i, head in enumerate(headlines):
 
             st.write(head)
@@ -43,6 +45,6 @@ def main():
             get_sens_in_app(sharecode, time_period)
 
 
-    
+
 if __name__ == '__main__':
     main()
