@@ -34,12 +34,15 @@ class NewsGetter():
         all_company_links = []
         soup = BeautifulSoup(html, 'lxml')
 
-        #pattern = r'^ViewSENSWithHighlight'
-        newspage = soup.find_all('a', class_="article-item--url")
+        pattern = r"^https"
+        newspage = soup.find_all('h3', class_= "title list-title m0005")
 
         for headline in newspage:
+            headline = headline.find("a")
             newslink = headline.get("href")
-            headline = headline.get("aria-label")
+            headline = headline.text.strip()
+
+            re.compile(pattern)
 
             link = newslink
 

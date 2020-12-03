@@ -7,14 +7,14 @@ import streamlit as st
 #https://www.profiledata.co.za/BrokerSites/BusinessLive/SENS.aspx?id=372260
 
 def get_sens_in_app(code, time_period):
-    if time_period == '21':
+    if time_period == '15':
         loopEnd = 2
-    elif time_period == '42':
+    elif time_period == '30':
         loopEnd = 3
     else:
         loopEnd = 4
     for page in range(1,loopEnd):
-        url = f"https://www.news24.com/news24/search?query={code}&pageNumber={page}"
+        url = f"https://www.moneyweb.co.za/company-news/page/{page}/?shareCode={code}"
 
         with st.spinner("Loading Headlines...."):
             links, headlines = NewsGetter.get_news_headlines(NewsGetter.get_html(url))
@@ -39,7 +39,7 @@ def main():
 
         st.subheader('News Headline Analyser')
         sharecode = st.text_area('Enter the name of the JSE company:')
-        time_period = st.radio('Select the Number of Articles to Analyse',('21', '42', '63'))
+        time_period = st.radio('Select the Number of Articles to Analyse',('15', '30', '45'))
         generate = st.button("Create List")
         if sharecode != "" and generate:
             get_sens_in_app(sharecode, time_period)
