@@ -38,7 +38,7 @@ def get_news_in_app(code, time_period):
                     lowest = ss['compound']
                     lowestSent = i
 
-    st.write(sumScore/len(int(time_period))
+    st.write(sumScore/len(int(time_period)))
     st.write("The most positive sentence is {0}, with a score of {1}".format(headlines[highestSent], highest))
     st.write("The most negative sentence is {0}, with a score of {1}".format(headlines[lowestSent], lowest))
         """for  i, head in enumerate(headlines):
