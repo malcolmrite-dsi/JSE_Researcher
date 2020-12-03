@@ -20,7 +20,7 @@ def get_news_in_app(code, time_period):
 
     lowest = 1
     highest = -1
-    sumCount = 0
+    sumScore = 0
     for page in range(1,loopEnd):
         url = f"https://www.moneyweb.co.za/company-news/page/{page}/?shareCode={code}"
 
