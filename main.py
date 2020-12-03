@@ -10,6 +10,7 @@ nltk.download('vader_lexicon')
 #https://www.profiledata.co.za/BrokerSites/BusinessLive/SENS.aspx?id=372260
 
 def get_news_in_app(code, time_period):
+    sid = SentimentIntensityAnalyzer()
     if time_period == '15':
         loopEnd = 2
     elif time_period == '30':
