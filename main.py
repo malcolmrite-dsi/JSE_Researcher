@@ -1,6 +1,5 @@
 
-from request_web import SensGetter
-from request_web import NewsGetter
+import request_web as rwb
 import re
 import streamlit as st
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
@@ -9,42 +8,62 @@ nltk.download('vader_lexicon')
 #http://196.30.126.229/V2/Controls/News/NewsList/NLJSONdata.aspx?jsecode=IMP&type=sens&filter=&search=
 #https://www.profiledata.co.za/BrokerSites/BusinessLive/SENS.aspx?id=372260
 
-def get_news_in_app(code, time_period):
-    sid = SentimentIntensityAnalyzer()
-    if time_period == '15':
-        loopEnd = 2
-    elif time_period == '30':
-        loopEnd = 3
-    else:
-        loopEnd = 4
+#Function to display the background info for a specified company
+def get_background(code):
+    text_list = rwb.CompanyGetter.get_company_background(rwb.NewsGetter.get_html(f"https://www.moneyweb.co.za/tools-and-data/click-a-company/{code}/"))
 
+    for text in text_list:
+        st.subheader(text)
+
+
+def get_news_in_app(code, time_period, detail):
+    sid = SentimentIntensityAnalyzer()
+    all_headlines = []
+    all_links = []
+    full_scores = []
     lowest = 1
     highest = -1
     sumScore = 0
-    for page in range(1,loopEnd):
-        url = f"https://www.moneyweb.co.za/company-news/page/{page}/?shareCode={code}"
+    highestSent = 0
+    lowestSent = 0
+    with st.spinner("Loading Headlines...."):
+        for page in range(1,time_period):
+            url = f"https://www.moneyweb.co.za/company-news/page/{page}/?shareCode={code}"
 
-        with st.spinner("Loading Headlines...."):
-            links, headlines = NewsGetter.get_news_headlines(NewsGetter.get_html(url))
+
+
+            links, headlines = rwb.NewsGetter.get_news_headlines(rwb.NewsGetter.get_html(url))
             for  i, head in enumerate(headlines):
+
+                all_headlines.append(head)
+                all_links.append(links[i])
 
                 ss = sid.polarity_scores(head)
                 sumScore += ss['compound']
+                full_scores.append(ss['compound'])
 
-                if ss['compound'] > highest:
-                    highest = ss['compound']
-                    highestSent = i
-                elif ss['compound'] < lowest:
-                    lowest = ss['compound']
-                    lowestSent = i
+        for i, head in enumerate(all_headlines):
+            if full_scores[i] > highest:
+                highest = full_scores[i]
+                highestSent = i
 
-    st.write(sumScore/(int(time_period)))
-    st.write("The most positive sentence is {0}, with a score of {1}".format(headlines[highestSent], highest))
-    st.write("The most negative sentence is {0}, with a score of {1}".format(headlines[lowestSent], lowest))
-    """for  i, head in enumerate(headlines):
-            st.write(head)
-            st.write(links[i])
-            st.write("-----------------")"""
+            elif full_scores[i] < lowest:
+                lowest = full_scores[i]
+                lowestSent = i
+
+
+
+    if detail == 'Summary':
+        st.write("{:0.3f}".format(sumScore/(int(len(all_headlines)))))
+        st.write("The most positive headline is {0}, with a score of {1}. Here's the link {2}".format(all_headlines[highestSent], highest, all_links[highestSent]))
+        st.write("The most negative headline is {0}, with a score of {1}. Here's the link {2}".format(all_headlines[lowestSent], lowest, all_links[lowestSent]))
+
+    if detail == 'Full List':
+        for  i, head in enumerate(all_headlines):
+                st.write(head)
+                st.write(all_links[i])
+                st.write(full_scores[i])
+                st.write("----------------------------")
 
 
 def main():
@@ -54,16 +73,24 @@ def main():
     st.sidebar.subheader("Africa DSI Final Project-")
     st.sidebar.write("By Malcolm Wright")
     st.sidebar.write("App is still under development, almost all the features don't work.")
-    section = st.sidebar.radio('Sections to Visit',('News Analyser', 'Financial Forecasting', 'Report Generator'))
+    section = st.sidebar.radio('Sections to Visit',('Company Background', 'News Analyser', 'Financial Forecasting', 'Report Generator'))
+
+    if section == 'Company Background':
+        st.subheader('Company Background Summary')
+        sharecode = st.text_area('Enter the name of the JSE company:')
+        generate = st.button("Generate Background")
+        if sharecode != "" and generate:
+            get_background(sharecode)
 
     if section == 'News Analyser':
 
         st.subheader('News Headline Analyser')
         sharecode = st.text_area('Enter the name of the JSE company:')
-        time_period = st.radio('Select the Number of Articles to Analyse',('15', '30', '45'))
+        time_period = st.slider('How many pages should we analyse?',1, 10)
+        details = st.radio('Do you want the full list of the Headlines? Or just a Sentiment Summary',('Summary', 'Full List'))
         generate = st.button("Create List")
         if sharecode != "" and generate:
-            get_news_in_app(sharecode, time_period)
+            get_news_in_app(sharecode, time_period, details)
 
 
 

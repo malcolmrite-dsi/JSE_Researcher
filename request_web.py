@@ -1,8 +1,37 @@
+
+#Import Libraries
 import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 import re
 
+
+#Class for getting company background informantion
+class CompanyGetter():
+    def get_html(url):
+        response = requests.get(url)
+        if not response.ok:
+            print(f'Code: {response.status_code}, url: {url}')
+        return response.text
+
+    def get_company_background(html):
+        all_company_text = []
+
+        soup = BeautifulSoup(html, 'lxml')
+
+        #pattern = r'^ViewSENSWithHighlight'
+        companypage = soup.find('div', class_="row tools-container m0010")
+        companypage = companypage.find_all('p')
+        for text in companypage:
+            text = text.text.strip()
+            all_company_text.append(text)
+
+        return all_company_text
+
+        
+
+
+#Class for getting the news headlines for a specific share code
 class NewsGetter():
     """docstring for NewsGetter."""
     def get_html(url):
@@ -12,22 +41,6 @@ class NewsGetter():
         return response.text
 
 
-    def get_company_links(html):
-        all_company_links = []
-
-        soup = BeautifulSoup(html, 'lxml')
-
-        #pattern = r'^ViewSENSWithHighlight'
-        companypage = soup.find_all('a', target_="_blank")
-
-        for share in companypage:
-            share = share.get("href")
-
-            link = "https://za.investing.com" + share
-
-            all_company_links.append(link)
-
-        return all_company_links
 
     def get_news_headlines(html):
         all_company_headlines = []
@@ -51,6 +64,7 @@ class NewsGetter():
 
         return all_company_links, all_company_headlines
 
+#Class for getting the SENS text or headline for a specific share code
 class SensGetter():
     def get_html(url):
         response = requests.get(url)
