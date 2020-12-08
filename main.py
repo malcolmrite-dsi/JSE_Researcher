@@ -85,7 +85,8 @@ def main():
 
     if section == 'Company Background':
         st.subheader('Company Background Summary')
-        sharecode = st.text_input('Enter the name of the JSE company:')
+        share_codes = rwb.SensGetter.get_share_code("JSE_company_list.csv")
+        sharecode = st.selectbox("JSE Companies:", share_codes)
         generate = st.button("Generate Background")
         if sharecode != "" and generate:
             get_background(sharecode)
@@ -96,9 +97,8 @@ def main():
         subject = st.radio('JSE sector or Company analysis?',('Company', 'Sector'))
         if subject == "Company":
             share_codes = rwb.SensGetter.get_share_code("JSE_company_list.csv")
-            sharecode = st.selectbox("JSE Sectors:", share_codes)
+            sharecode = st.selectbox("JSE Companies:", share_codes)
         else:
-
             share_codes = rwb.SensGetter.get_share_code("Sector_List.csv")
             sharecode = st.selectbox("JSE Sectors:", share_codes)
         time_period = st.slider('How many pages should we analyse?',1, 10)
