@@ -59,6 +59,8 @@ def get_news_in_app(code, time_period, detail, subject):
                 lowestSent = i
 
 
+    if all_headlines == 0:
+        all_headlines = 1
 
     if detail == 'Summary':
         st.write("{:0.3f}".format(sumScore/(int(len(all_headlines)))))
