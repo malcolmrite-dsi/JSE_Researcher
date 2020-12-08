@@ -72,8 +72,7 @@ def get_news_in_app(code, time_period, detail, subject):
                 st.write(full_scores[i])
                 st.write("----------------------------")
 
-file = CompanyGenerator.get_jse_sectors()
-share_codes = rwb.SensGetter.get_share_code(file)
+
 def main():
     st.title("JSE Researcher-ALPHA_TESTING")
     st.subheader("*Cutting investment research from hours to minutes with the power of AI!*")
