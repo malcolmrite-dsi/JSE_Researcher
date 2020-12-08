@@ -4,7 +4,9 @@ import re
 import streamlit as st
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 import nltk
-nltk.download('vader_lexicon')
+from Company_List_Generator import CompanyGenerator
+
+
 #http://196.30.126.229/V2/Controls/News/NewsList/NLJSONdata.aspx?jsecode=IMP&type=sens&filter=&search=
 #https://www.profiledata.co.za/BrokerSites/BusinessLive/SENS.aspx?id=372260
 
@@ -14,9 +16,11 @@ def get_background(code):
 
     for text in text_list:
         st.subheader(text)
+def download_lexicon():
+    nltk.download('vader_lexicon')
 
-
-def get_news_in_app(code, time_period, detail):
+def get_news_in_app(code, time_period, detail, subject):
+    download_lexicon()
     sid = SentimentIntensityAnalyzer()
     all_headlines = []
     all_links = []
@@ -65,7 +69,8 @@ def get_news_in_app(code, time_period, detail):
                 st.write(full_scores[i])
                 st.write("----------------------------")
 
-
+file = CompanyGenerator.get_jse_sectors()
+share_codes = rwb.SensGetter.get_share_code(file)
 def main():
     st.title("JSE Researcher-ALPHA_TESTING")
     st.subheader("*Cutting investment research from hours to minutes with the power of AI!*")
@@ -77,7 +82,7 @@ def main():
 
     if section == 'Company Background':
         st.subheader('Company Background Summary')
-        sharecode = st.text_area('Enter the name of the JSE company:')
+        sharecode = st.text_input('Enter the name of the JSE company:')
         generate = st.button("Generate Background")
         if sharecode != "" and generate:
             get_background(sharecode)
@@ -85,12 +90,18 @@ def main():
     if section == 'News Analyser':
 
         st.subheader('News Headline Analyser')
-        sharecode = st.text_area('Enter the name of the JSE company:')
+        subject = st.radio('JSE sector or Company analysis?',('Company', 'Sector'))
+        if subject == "Company":
+            sharecode = st.text_input('Enter the name of the JSE company:')
+        else:
+            file = CompanyGenerator.get_jse_sectors()
+            share_codes = rwb.SensGetter.get_share_code(file)
+            sharecode = st.selectbox("JSE Sectors:", share_codes)
         time_period = st.slider('How many pages should we analyse?',1, 10)
         details = st.radio('Do you want the full list of the Headlines? Or just a Sentiment Summary',('Summary', 'Full List'))
         generate = st.button("Create List")
         if sharecode != "" and generate:
-            get_news_in_app(sharecode, time_period, details)
+            get_news_in_app(sharecode, time_period, details, subject)
 
 
 

@@ -28,7 +28,7 @@ class CompanyGetter():
 
         return all_company_text
 
-        
+
 
 
 #Class for getting the news headlines for a specific share code
@@ -131,6 +131,18 @@ class SensGetter():
                 print(company.text.strip())
                 company_list.append(company.text.strip())
         return company_list
+    def get_sector_list(html):
+        sectors = []
+        soup = BeautifulSoup(html, 'lxml')
+        sectorpage = soup.find_all('span', class_= "fakelink")
+        for sector in sectorpage:
+
+            if (sector.text.strip() != ""):
+                #print(sector.text.strip())
+                sectors.append(sector.text.strip())
+
+        return sectors
+
 
     def get_sens_text(id, title):
         url = f'https://www.profiledata.co.za/BrokerSites/BusinessLive/SENS.aspx?id={id}'

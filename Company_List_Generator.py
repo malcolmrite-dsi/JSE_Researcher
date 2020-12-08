@@ -35,3 +35,19 @@ class CompanyGenerator():
 
         df.close()
         return "TOP40_company_list.csv"
+
+    def get_jse_sectors():
+        df = open("Sector_List.csv","w")
+        csv_writer = csv.writer(df)
+
+        csv_writer.writerow(["Share Code"])
+
+        url = f"https://www.sharedata.co.za/V2/Controls/Shares/ShareIndex/SIJSONData.aspx?indextype=sectorindex&sortfield=FULLNAME"
+        codeCount = 0
+        list = SensGetter.get_sector_list(SensGetter.get_html(url))
+
+        for i in range(0,len(list)-1):
+            csv_writer.writerow([list[i]])
+
+        df.close()
+        return "Sector_List.csv"
