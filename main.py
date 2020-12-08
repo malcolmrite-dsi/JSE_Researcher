@@ -32,11 +32,14 @@ def get_news_in_app(code, time_period, detail, subject):
     lowestSent = 0
     with st.spinner("Loading Headlines...."):
         for page in range(1,time_period):
-            url = f"https://www.moneyweb.co.za/company-news/page/{page}/?shareCode={code}"
+            if subject == "Company":
+                url = f"https://www.moneyweb.co.za/company-news/page/{page}/?shareCode={code}"
+                links, headlines = rwb.NewsGetter.get_news_headlines(rwb.NewsGetter.get_html(url))
+            else:
+                url = f"https://www.news24.com/news24/search?query={code}&pageNumber={page}"
+                links, headlines = rwb.NewsGetter.get_sector_headlines(rwb.NewsGetter.get_html(url))
 
 
-
-            links, headlines = rwb.NewsGetter.get_news_headlines(rwb.NewsGetter.get_html(url))
             for  i, head in enumerate(headlines):
 
                 all_headlines.append(head)
@@ -92,10 +95,11 @@ def main():
         st.subheader('News Headline Analyser')
         subject = st.radio('JSE sector or Company analysis?',('Company', 'Sector'))
         if subject == "Company":
-            sharecode = st.text_input('Enter the name of the JSE company:')
+            share_codes = rwb.SensGetter.get_share_code("JSE_company_list.csv")
+            sharecode = st.selectbox("JSE Sectors:", share_codes)
         else:
-            file = CompanyGenerator.get_jse_sectors()
-            share_codes = rwb.SensGetter.get_share_code(file)
+
+            share_codes = rwb.SensGetter.get_share_code("Sector_List.csv")
             sharecode = st.selectbox("JSE Sectors:", share_codes)
         time_period = st.slider('How many pages should we analyse?',1, 10)
         details = st.radio('Do you want the full list of the Headlines? Or just a Sentiment Summary',('Summary', 'Full List'))

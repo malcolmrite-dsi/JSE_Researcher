@@ -39,7 +39,31 @@ class NewsGetter():
         if not response.ok:
             print(f'Code: {response.status_code}, url: {url}')
         return response.text
+    def get_sector_headlines(html):
+        all_company_headlines = []
+        all_company_links = []
+        soup = BeautifulSoup(html, 'lxml')
 
+        pattern = "https:"
+        newspage = soup.find_all('a', class_= "article-item--url")
+
+        for headline in newspage:
+            head = headline.get("aria-label")
+            newslink = headline.get("href")
+
+            if newslink.find(pattern):
+                newslink = "https://www.news24.com"+newslink
+
+            else:
+                newslink = newslink
+
+
+            link = newslink
+
+            all_company_links.append(link)
+            all_company_headlines.append(head)
+
+        return all_company_links, all_company_headlines
 
 
     def get_news_headlines(html):
@@ -54,8 +78,6 @@ class NewsGetter():
             headline = headline.find("a")
             newslink = headline.get("href")
             headline = headline.text.strip()
-
-            re.compile(pattern)
 
             link = newslink
 
