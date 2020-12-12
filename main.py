@@ -19,12 +19,26 @@ def get_background(code):
 def download_lexicon():
     nltk.download('vader_lexicon')
 
+def add_label(score):
+    if score < -0.5:
+        label ="Negative"
+    elif score < -0.05:
+        label ="Slightly Negative"
+    elif score < 0.05:
+        label ="Neutral"
+    elif score <= 0.5:
+        label ="Slightly Positive"
+    else:
+        label ="Positive"
+    return label
+
 def get_news_in_app(code, time_period, detail, subject):
     download_lexicon()
     sid = SentimentIntensityAnalyzer()
     all_headlines = []
     all_links = []
     full_scores = []
+    full_labels = []
     lowest = 1
     highest = -1
     sumScore = 0
@@ -36,6 +50,8 @@ def get_news_in_app(code, time_period, detail, subject):
                 url = f"https://www.moneyweb.co.za/company-news/page/{page}/?shareCode={code}"
                 links, headlines = rwb.NewsGetter.get_news_headlines(rwb.NewsGetter.get_html(url))
             else:
+                code = code.split(" ")
+                code = code.join("+")
                 url = f"https://www.news24.com/news24/search?query={code}&pageNumber={page}"
                 links, headlines = rwb.NewsGetter.get_sector_headlines(rwb.NewsGetter.get_html(url))
 
@@ -47,6 +63,7 @@ def get_news_in_app(code, time_period, detail, subject):
 
                 ss = sid.polarity_scores(head)
                 sumScore += ss['compound']
+                full_labels.append(add_label(ss['compound']))
                 full_scores.append(ss['compound'])
 
         for i, head in enumerate(all_headlines):
@@ -59,21 +76,21 @@ def get_news_in_app(code, time_period, detail, subject):
                 lowestSent = i
 
 
-    if all_headlines == 0:
-        all_headlines = 1
+    if detail == 'Summary' and len(all_headlines) >= 1:
+        st.subheader(add_label(sumScore/(int(len(all_headlines)))))
+        st.write("{0:0.3f}".format(sumScore/(int(len(all_headlines)))))
+        st.write("The most positive headline is {0}, with a score of {1}, {2}. Here's the link {3}".format(all_headlines[highestSent], highest, full_labels[highestSent], all_links[highestSent]))
+        st.write("The most negative headline is {0}, with a score of {1}, {2}. Here's the link {3}".format(all_headlines[lowestSent], lowest, full_labels[lowestSent], all_links[lowestSent]))
 
-    if detail == 'Summary':
-        st.write("{:0.3f}".format(sumScore/(int(len(all_headlines)))))
-        st.write("The most positive headline is {0}, with a score of {1}. Here's the link {2}".format(all_headlines[highestSent], highest, all_links[highestSent]))
-        st.write("The most negative headline is {0}, with a score of {1}. Here's the link {2}".format(all_headlines[lowestSent], lowest, all_links[lowestSent]))
-
-    if detail == 'Full List':
+    elif detail == 'Full List':
         for  i, head in enumerate(all_headlines):
                 st.write(head)
                 st.write(all_links[i])
-                st.write(full_scores[i])
+                st.write(full_scores[i], full_labels[i])
                 st.write("----------------------------")
 
+    elif len(all_headlines) == 0:
+        st.write("There are currently no headlines for this company.")
 
 def main():
     st.title("JSE Researcher-ALPHA_TESTING")
