@@ -105,11 +105,11 @@ def get_news_in_app(code, time_period, detail, subject):
 def main():
     st.title("JSE Researcher-ALPHA_TESTING")
     st.subheader("*Cutting investment research from hours to minutes with the power of AI!*")
-
-    st.sidebar.subheader("Africa DSI Final Project-")
+    st.sidebar.image("DSI-logo.jpg", use_column_width = True)
+    st.sidebar.subheader("Africa DSI Final Project")
     st.sidebar.write("By Malcolm Wright")
     st.sidebar.write("App is still under development, almost all the features don't work.")
-    section = st.sidebar.radio('Sections to Visit',('Company Background','Latest SENS', 'News Analyser', 'Financial Forecasting', 'Report Generator'))
+    section = st.sidebar.radio('Sections to Visit',('Company Background','Latest SENS', 'News Analyser', 'Financial Analysis','Financial Forecasting', 'Report Generator'))
 
     if section == 'Company Background':
         st.subheader('Company Background Summary')
@@ -120,7 +120,7 @@ def main():
             get_background(sharecode)
 
     if section == 'Latest SENS':
-        st.subheader('Latest Stock Exchange News Service Informantion')
+        st.subheader('Latest Stock Exchange News Service Information')
         share_codes = rwb.SensGetter.get_share_code("JSE_company_list.csv")
         sharecode = st.selectbox("JSE Companies:", share_codes)
         time_period = st.slider('How many SENS items should we Display?',1, 50)
@@ -131,7 +131,7 @@ def main():
     if section == 'News Analyser':
 
         st.subheader('News Headline Analyser')
-        subject = st.radio('JSE sector or Company analysis?',('Company', 'Sector'))
+        subject = st.radio('JSE Sector or Company Analysis?',('Company', 'Sector'))
         if subject == "Company":
             share_codes = rwb.SensGetter.get_share_code("JSE_company_list.csv")
             sharecode = st.selectbox("JSE Companies:", share_codes)
@@ -144,6 +144,19 @@ def main():
         if sharecode != "" and generate:
             get_news_in_app(sharecode, time_period, details, subject)
 
+    if section == 'Financial Analysis':
+        st.subheader('Financial Analyser')
+        subject = st.radio('JSE Sector or Company Analysis?',('Company', 'Sector'))
+        if subject == "Company":
+            share_codes = rwb.SensGetter.get_share_code("JSE_company_list.csv")
+            sharecode = st.selectbox("JSE Companies:", share_codes)
+        else:
+            share_codes = rwb.SensGetter.get_share_code("Sector_List.csv")
+            sharecode = st.selectbox("JSE Sectors:", share_codes)
+
+        generate = st.button("Generate Analysis")
+        if sharecode != "" and generate:
+            st.write("Not Ready Yet.")
 
 
 if __name__ == '__main__':
