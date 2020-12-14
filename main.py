@@ -33,7 +33,7 @@ def add_label(score):
     return label
 
 def get_sens_in_app(code, upperLimit):
-    url = f"https://www.profiledata.co.za/brokersites/businesslive/Controls/Toolbox/SensSearch/SSJSONdata.aspx?date=26%20Nov%202015&enddate=26%20Nov%202020&keyword=&sharecode={code}&sectorcode="
+    url = f"https://www.profiledata.co.za/brokersites/businesslive/Controls/Toolbox/SensSearch/SSJSONdata.aspx?date=26%20Nov%202010&enddate=26%31Dec%202020&keyword=&sharecode={code}&sectorcode="
 
     sens_ids, sens_titles, sens_dates = rwb.SensGetter.get_sens_id(rwb.SensGetter.get_html(url))
 
@@ -60,8 +60,8 @@ def get_news_in_app(code, time_period, detail, subject):
                 url = f"https://www.moneyweb.co.za/company-news/page/{page}/?shareCode={code}"
                 links, headlines = rwb.NewsGetter.get_news_headlines(rwb.NewsGetter.get_html(url))
             else:
-                code1 = code.split(" ")
-                code = "+".join(code1)
+                code = code.split(" ")
+                code = "+".join(code)
                 url = f"https://www.news24.com/news24/search?query={code}&pageNumber={page}"
                 links, headlines = rwb.NewsGetter.get_sector_headlines(rwb.NewsGetter.get_html(url))
 
