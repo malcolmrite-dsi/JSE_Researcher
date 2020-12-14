@@ -32,6 +32,16 @@ def add_label(score):
         label ="Positive"
     return label
 
+def get_sens_in_app(code, upperLimit):
+    url = f"https://www.profiledata.co.za/brokersites/businesslive/Controls/Toolbox/SensSearch/SSJSONdata.aspx?date=26%20Nov%202015&enddate=26%20Nov%202020&keyword=&sharecode={code}&sectorcode="
+
+    sens_ids, sens_titles, sens_dates = rwb.SensGetter.get_sens_id(rwb.SensGetter.get_html(url))
+
+    for i, sens in enumerate(sens_ids[:upperLimit]):
+        text = rwb.SensGetter.get_sens_text(sens, sens_titles[i])
+        st.markdown(text)
+        st.write("-------------------------------")
+
 def get_news_in_app(code, time_period, detail, subject):
     download_lexicon()
     sid = SentimentIntensityAnalyzer()
@@ -99,7 +109,7 @@ def main():
     st.sidebar.subheader("Africa DSI Final Project-")
     st.sidebar.write("By Malcolm Wright")
     st.sidebar.write("App is still under development, almost all the features don't work.")
-    section = st.sidebar.radio('Sections to Visit',('Company Background', 'News Analyser', 'Financial Forecasting', 'Report Generator'))
+    section = st.sidebar.radio('Sections to Visit',('Company Background','Latest SENS', 'News Analyser', 'Financial Forecasting', 'Report Generator'))
 
     if section == 'Company Background':
         st.subheader('Company Background Summary')
@@ -108,6 +118,15 @@ def main():
         generate = st.button("Generate Background")
         if sharecode != "" and generate:
             get_background(sharecode)
+
+    if section == 'Latest SENS':
+        st.subheader('Latest Stock Exchange News Service Informantion')
+        share_codes = rwb.SensGetter.get_share_code("JSE_company_list.csv")
+        sharecode = st.selectbox("JSE Companies:", share_codes)
+        time_period = st.slider('How many SENS items should we Display?',1, 50)
+        generate = st.button("Generate SENS")
+        if sharecode != "" and generate:
+            get_sens_in_app(sharecode, time_period)
 
     if section == 'News Analyser':
 
