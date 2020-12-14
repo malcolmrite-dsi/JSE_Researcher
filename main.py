@@ -60,8 +60,8 @@ def get_news_in_app(code, time_period, detail, subject):
                 url = f"https://www.moneyweb.co.za/company-news/page/{page}/?shareCode={code}"
                 links, headlines = rwb.NewsGetter.get_news_headlines(rwb.NewsGetter.get_html(url))
             else:
-                code = code.split(" ")
-                code = code.join("+")
+                code1 = code.split(" ")
+                code = "+".join(code1)
                 url = f"https://www.news24.com/news24/search?query={code}&pageNumber={page}"
                 links, headlines = rwb.NewsGetter.get_sector_headlines(rwb.NewsGetter.get_html(url))
 
@@ -138,7 +138,7 @@ def main():
         else:
             share_codes = rwb.SensGetter.get_share_code("Sector_List.csv")
             sharecode = st.selectbox("JSE Sectors:", share_codes)
-        time_period = st.slider('How many pages should we analyse?',1, 10)
+        time_period = st.slider('How many pages should we analyse?',2, 11)
         details = st.radio('Do you want the full list of the Headlines? Or just a Sentiment Summary',('Summary', 'Full List'))
         generate = st.button("Create List")
         if sharecode != "" and generate:
