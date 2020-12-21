@@ -55,9 +55,9 @@ class FinancialGetter():
                 financials.append(row)
 
         data = pd.DataFrame(financials, columns = [periods])
-        traindata = data.drop(columns = ["ttm"], level = 0)
+        #traindata = data.drop(columns = ["ttm"], level = 0)
 
-        return traindata
+        return data
 
 #Class for getting the news headlines for a specific share code
 class NewsGetter():
