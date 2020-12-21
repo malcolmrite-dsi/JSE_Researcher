@@ -47,7 +47,7 @@ class FinancialGetter():
         findata = soup.find_all('div', {'data-test': "fin-row"})
 
         financials = []
-        for item in newspage:
+        for item in findata:
             row = []
             textRow = item.find_all("span")
             for textItem in textRow:
