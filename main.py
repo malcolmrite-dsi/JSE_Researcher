@@ -46,7 +46,7 @@ def get_financials(code, subject):
     if subject == "Company":
         url = f"https://finance.yahoo.com/quote/{code}.JO/financials?p={code}.JO"
         table = rwb.FinancialGetter.get_income_statement(rwb.FinancialGetter.get_html(url))
-        st.write(table)
+        st.dataframe(table)
 
     else:
         st.write("Not Ready Yet.")
