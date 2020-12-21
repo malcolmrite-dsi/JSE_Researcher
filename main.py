@@ -42,6 +42,15 @@ def get_sens_in_app(code, upperLimit):
         st.markdown(text)
         st.write("-------------------------------")
 
+def get_financials(code, subject):
+    if subject == "Company":
+        url = f"https://finance.yahoo.com/quote/{code}.JO/financials?p={code}.JO"
+        table = rwb.FinancialGetter.get_income_statement(rwb.FinancialGetter.get_html(url))
+        st.write(table)
+
+    else:
+        st.write("Not Ready Yet.")
+
 def get_news_in_app(code, time_period, detail, subject):
     download_lexicon()
     sid = SentimentIntensityAnalyzer()
@@ -156,7 +165,7 @@ def main():
 
         generate = st.button("Generate Analysis")
         if sharecode != "" and generate:
-            st.write("Not Ready Yet.")
+            get_financials(sharecode, subject)
 
 
 if __name__ == '__main__':

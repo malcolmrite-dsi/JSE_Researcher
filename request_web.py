@@ -28,8 +28,36 @@ class CompanyGetter():
 
         return all_company_text
 
+class FinancialGetter():
+    def get_html(url):
+        response = requests.get(url)
+        if not response.ok:
+            print(f'Code: {response.status_code}, url: {url}')
+        return response.text
 
+    def get_income_statement(html):
+        soup = BeautifulSoup(html, 'lxml')
 
+        header = soup.find('div', {'class': "D(tbhg)"})
+        periods = []
+        columns = header.find_all("span")
+        for item in columns:
+            periods.append(item.text)
+
+        findata = soup.find_all('div', {'data-test': "fin-row"})
+
+        financials = []
+        for item in newspage:
+            row = []
+            textRow = item.find_all("span")
+            for textItem in textRow:
+                row.append(textItem.text)
+                financials.append(row)
+
+        data = pd.DataFrame(financials, columns = [periods])
+        traindata = data.drop(columns = ["ttm"], level = 0)
+
+        return traindata
 
 #Class for getting the news headlines for a specific share code
 class NewsGetter():
