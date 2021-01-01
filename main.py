@@ -16,6 +16,8 @@ def get_background(code):
 
     for text in text_list:
         st.subheader(text)
+
+@st.cache
 def download_lexicon():
     nltk.download('vader_lexicon')
 
@@ -46,10 +48,8 @@ def get_financials(code, subject):
     if subject == "Company":
         url = f"https://finance.yahoo.com/quote/{code}.JO/financials?p={code}.JO"
         table = rwb.FinancialGetter.get_income_statement(rwb.FinancialGetter.get_html(url))
-        st.dataframe(table)
 
-    else:
-        st.write("Not Ready Yet.")
+    return table
 
 def get_news_in_app(code, time_period, detail, subject):
     download_lexicon()
@@ -165,8 +165,8 @@ def main():
 
         generate = st.button("Generate Analysis")
         if sharecode != "" and generate:
-            get_financials(sharecode, subject)
-
+            table = get_financials(sharecode, subject)
+            st.write(table)
 
 if __name__ == '__main__':
     main()

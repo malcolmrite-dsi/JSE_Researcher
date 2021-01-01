@@ -37,27 +37,27 @@ class FinancialGetter():
 
     def get_income_statement(html):
         soup = BeautifulSoup(html, 'lxml')
-
+        financials = []
         header = soup.find('div', {'class': "D(tbhg)"})
         periods = []
         columns = header.find_all("span")
         for item in columns:
-            periods.append(item.text)
+          periods.append(item.text)
 
-        findata = soup.find_all('div', {'data-test': "fin-row"})
-
-        financials = []
-        for item in findata:
+        newspage = soup.find_all('div', {'data-test': "fin-row"})
+        for item in newspage:
             row = []
             textRow = item.find_all("span")
             for textItem in textRow:
                 row.append(textItem.text)
-                financials.append(row)
+                print(textItem.text)
+            financials.append(row)
+            data = pd.DataFrame(financials, columns = [periods])
+            traindata = data.drop(columns = ["ttm"], level = 0)
 
-        data = pd.DataFrame(financials, columns = [periods])
-        #traindata = data.drop(columns = ["ttm"], level = 0)
 
-        return data
+
+        return traindata
 
 #Class for getting the news headlines for a specific share code
 class NewsGetter():
