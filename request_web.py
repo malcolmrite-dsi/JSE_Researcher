@@ -14,6 +14,21 @@ class CompanyGetter():
             print(f'Code: {response.status_code}, url: {url}')
         return response.text
 
+    def get_management(html):
+        all_persons = []
+
+        soup = BeautifulSoup(html, 'lxml')
+        managepage = soup.find('table', class_= "W(100%)")
+        managepage = managepage.find_all('tr')
+        for person in managepage:
+            details = []
+            person = person.find_all('span')
+            for field in person:
+                details.append(field.text.strip())
+            all_persons.append(details)
+
+        return all_persons
+
     def get_company_background(html):
         all_company_text = []
 
@@ -50,7 +65,7 @@ class FinancialGetter():
             textRow = item.find_all("span")
             for textItem in textRow:
                 row.append(textItem.text)
-                print(textItem.text)
+
             financials.append(row)
             traindata = pd.DataFrame(financials, columns = [periods])
             if type == "Income" or type == "Cash Flow":
@@ -136,6 +151,12 @@ class SensGetter():
 
         return comp_list
 
+    def get_icb_code(filename):
+
+        sectors = pd.read_csv(filename)
+        
+        return sectors
+
     def get_sens_id(html):
         all_sens = []
         all_titles = []
@@ -186,17 +207,34 @@ class SensGetter():
                 print(company.text.strip())
                 company_list.append(company.text.strip())
         return company_list
+
     def get_sector_list(html):
         sectors = []
+        icb_codes = []
         soup = BeautifulSoup(html, 'lxml')
-        sectorpage = soup.find_all('span', class_= "fakelink")
-        for sector in sectorpage:
 
-            if (sector.text.strip() != ""):
-                #print(sector.text.strip())
-                sectors.append(sector.text.strip())
+        codeTable = soup.find("tbody")
+        icbRows = codeTable.find_all("tr")
 
-        return sectors
+        for row in icbRows:
+            fieldCount = -1
+            columns = row.find_all("td")
+
+            for item in columns:
+                item = item.find("span")
+                if fieldCount == 0:
+
+                    print(item.text.strip())
+                    sectors.append(item.text.strip())
+                elif fieldCount == 1:
+
+                    print(item.text.strip())
+                    icb_codes.append(item.text.strip())
+
+                fieldCount += 1
+
+
+        return sectors, icb_codes
 
 
     def get_sens_text(id, title):

@@ -48,11 +48,14 @@ def get_train_headlines(page, code):
 
 
 def main():
+    """share_codes = rwb.SensGetter.get_share_code("Sector_List.csv")
+    dict = CompanyGenerator.get_jse_sector_codes()
+    for item in share_codes:
+        #rwb.CompanyGetter.get_company_background(rwb.NewsGetter.get_html(f"https://www.moneyweb.co.za/tools-and-data/click-a-company/{code}/"))
+        print(item)
+        print(len(share_codes))"""
 
     file = CompanyGenerator.get_jse_sectors()
-    share_codes = rwb.SensGetter.get_share_code(file)
-    for code in share_codes:
-        #rwb.CompanyGetter.get_company_background(rwb.NewsGetter.get_html(f"https://www.moneyweb.co.za/tools-and-data/click-a-company/{code}/"))
-        print("Final: " + code)
+    
 if __name__ == '__main__':
     main()

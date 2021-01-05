@@ -1,5 +1,8 @@
 from request_web import SensGetter
 import csv
+import requests
+from bs4 import BeautifulSoup
+
 
 class CompanyGenerator():
     def get_all_companies():
@@ -36,18 +39,20 @@ class CompanyGenerator():
         df.close()
         return "TOP40_company_list.csv"
 
+
     def get_jse_sectors():
         df = open("Sector_List.csv","w")
         csv_writer = csv.writer(df)
 
-        csv_writer.writerow(["Share Code"])
+        csv_writer.writerow(["Share Code", "ICB Code"])
 
-        url = f"https://www.sharedata.co.za/V2/Controls/Shares/ShareIndex/SIJSONData.aspx?indextype=sectorindex&sortfield=FULLNAME"
+        url = f"https://www.jse.co.za/services/indices/ICBSector"
         codeCount = 0
-        list = SensGetter.get_sector_list(SensGetter.get_html(url))
 
-        for i in range(0,len(list)-1):
-            csv_writer.writerow([list[i]])
+        text_list, icb_codes = SensGetter.get_sector_list(SensGetter.get_html(url))
+
+        for i in range(1,len(text_list)):
+            csv_writer.writerow([text_list[i], icb_codes[i]])
 
         df.close()
         return "Sector_List.csv"

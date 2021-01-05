@@ -20,9 +20,16 @@ def get_background(code):
     for text in text_list:
         st.subheader(text)
 
+    management = rwb.CompanyGetter.get_management(rwb.NewsGetter.get_html(f"https://finance.yahoo.com/quote/{code}.JO/profile?p={code}.JO"))
+    st.subheader("Management Team")
+    st.table(management)
+    st.write("Pay is in ZA Rands")
+
 @st.cache
 def download_lexicon():
     nltk.download('vader_lexicon')
+
+
 
 def add_label(score):
     if score < -0.5:
@@ -45,15 +52,20 @@ def get_sens_in_app(code, upperLimit):
     for i, sens in enumerate(sens_ids[:upperLimit]):
         text = rwb.SensGetter.get_sens_text(sens, sens_titles[i])
         st.markdown(text)
-        st.write("-------------------------------")
+        st.write("----------------------------------")
 
 def get_financials(code, subject, analysis):
+    if subject == "Sector":
+        icb = rwb.SensGetter.get_icb_code("Sector_List.csv")
+
+        value = icb.iloc[icb.loc[code],1]
+        st.write(value)
+
     if subject == "Company":
-        fig, ax = plt.subplots(figsize=(6, 4))
+        fig, ax = plt.subplots(figsize=(6, 6))
         if analysis == "Income":
             url = f"https://finance.yahoo.com/quote/{code}.JO/financials?p={code}.JO"
             table, dates = rwb.FinancialGetter.get_statement(rwb.FinancialGetter.get_html(url), analysis)
-
 
             numTable = table.to_numpy()
             plt.title("Revenues and Profits")
@@ -154,6 +166,8 @@ def get_news_in_app(code, time_period, detail, subject):
         st.write("There are currently no headlines for this company.")
 
 def main():
+
+
     st.title("JSE Researcher-ALPHA_TESTING")
     st.subheader("*Cutting investment research from hours to minutes with the power of AI!*")
     st.sidebar.image("DSI-logo.jpg", use_column_width = True)
@@ -201,11 +215,12 @@ def main():
         if subject == "Company":
             share_codes = rwb.SensGetter.get_share_code("JSE_company_list.csv")
             sharecode = st.selectbox("JSE Companies:", share_codes)
-            analysis = st.radio('Which type of analysis do you want to conduct?',('Income', 'Assets', "Cash Flow"))
+
         else:
             share_codes = rwb.SensGetter.get_share_code("Sector_List.csv")
             sharecode = st.selectbox("JSE Sectors:", share_codes)
 
+        analysis = st.radio('Which type of analysis do you want to conduct?',('Income', 'Assets', "Cash Flow"))
         generate = st.button("Generate Analysis")
         if sharecode != "" and generate:
             table = get_financials(sharecode, subject, analysis)
