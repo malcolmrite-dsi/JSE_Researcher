@@ -1,5 +1,8 @@
 
+
+#Importing custom library for web scraping
 import request_web as rwb
+import matplotlib.pyplot as plt
 import re
 import streamlit as st
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
@@ -44,11 +47,50 @@ def get_sens_in_app(code, upperLimit):
         st.markdown(text)
         st.write("-------------------------------")
 
-def get_financials(code, subject):
+def get_financials(code, subject, analysis):
     if subject == "Company":
-        url = f"https://finance.yahoo.com/quote/{code}.JO/financials?p={code}.JO"
-        table = rwb.FinancialGetter.get_income_statement(rwb.FinancialGetter.get_html(url))
+        fig, ax = plt.subplots(figsize=(6, 4))
+        if analysis == "Income":
+            url = f"https://finance.yahoo.com/quote/{code}.JO/financials?p={code}.JO"
+            table, dates = rwb.FinancialGetter.get_statement(rwb.FinancialGetter.get_html(url), analysis)
 
+
+            numTable = table.to_numpy()
+            plt.title("Revenues and Profits")
+            ax.plot(dates, numTable[0,1:], marker='o')
+            ax.plot(dates, numTable[2,1:], marker='o')
+            ax.plot(dates, numTable[8,1:], marker='o')
+            plt.legend((numTable[0,0], numTable[2,0], numTable[8,0]))
+            plt.xlabel('Time Periods')
+            plt.ylabel('Rands (in Billions)')
+
+
+        if analysis == "Assets":
+            url = f"https://finance.yahoo.com/quote/{code}.JO/balance-sheet?p={code}.JO"
+            table, dates = rwb.FinancialGetter.get_statement(rwb.FinancialGetter.get_html(url), analysis)
+
+            numTable = table.to_numpy()
+            plt.title("Assets and Liabilities")
+            ax.plot(dates, numTable[0,1:], marker='o')
+            ax.plot(dates, numTable[6,1:], marker='o')
+            ax.plot(dates, numTable[11,1:], marker='o')
+            plt.legend((numTable[0,0], numTable[6,0], numTable[11,0]))
+            plt.xlabel('Time Periods')
+            plt.ylabel('Rands (in Billions)')
+
+        if analysis == "Cash Flow":
+            url = f"https://finance.yahoo.com/quote/{code}.JO/cash-flow?p={code}.JO"
+            table, dates = rwb.FinancialGetter.get_statement(rwb.FinancialGetter.get_html(url), analysis)
+
+            numTable = table.to_numpy()
+            plt.title("Cash Flow Items")
+            ax.plot(dates, numTable[0,1:], marker='o')
+            ax.plot(dates, numTable[6,1:], marker='o')
+            ax.plot(dates, numTable[9,1:], marker='o')
+            plt.legend((numTable[0,0], numTable[6,0], numTable[9,0]))
+            plt.xlabel('Time Periods')
+            plt.ylabel('Rands (in Billions)')
+        st.pyplot(fig)
     return table
 
 def get_news_in_app(code, time_period, detail, subject):
@@ -159,13 +201,14 @@ def main():
         if subject == "Company":
             share_codes = rwb.SensGetter.get_share_code("JSE_company_list.csv")
             sharecode = st.selectbox("JSE Companies:", share_codes)
+            analysis = st.radio('Which type of analysis do you want to conduct?',('Income', 'Assets', "Cash Flow"))
         else:
             share_codes = rwb.SensGetter.get_share_code("Sector_List.csv")
             sharecode = st.selectbox("JSE Sectors:", share_codes)
 
         generate = st.button("Generate Analysis")
         if sharecode != "" and generate:
-            table = get_financials(sharecode, subject)
+            table = get_financials(sharecode, subject, analysis)
             st.write(table)
 
 if __name__ == '__main__':

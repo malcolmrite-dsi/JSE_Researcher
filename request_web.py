@@ -35,7 +35,7 @@ class FinancialGetter():
             print(f'Code: {response.status_code}, url: {url}')
         return response.text
 
-    def get_income_statement(html):
+    def get_statement(html, type):
         soup = BeautifulSoup(html, 'lxml')
         financials = []
         header = soup.find('div', {'class': "D(tbhg)"})
@@ -52,12 +52,17 @@ class FinancialGetter():
                 row.append(textItem.text)
                 print(textItem.text)
             financials.append(row)
-            data = pd.DataFrame(financials, columns = [periods])
-            traindata = data.drop(columns = ["ttm"], level = 0)
+            traindata = pd.DataFrame(financials, columns = [periods])
+            if type == "Income" or type == "Cash Flow":
+                traindata = traindata.drop(columns = ["ttm"], level = 0)
 
+        traindata.iloc[:,1:] = traindata.iloc[:,1:].apply(lambda x: x.str.replace(',', '').astype('float'))
+        headers = traindata.columns[1:].values.tolist()
+        dates = []
+        for date in headers:
+            dates.append(date[0])
 
-
-        return traindata
+        return traindata, dates
 
 #Class for getting the news headlines for a specific share code
 class NewsGetter():
