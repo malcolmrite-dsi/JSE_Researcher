@@ -58,7 +58,7 @@ def get_financials(code, subject, analysis):
     if subject == "Sector":
         icb = rwb.SensGetter.get_icb_code("Sector_List.csv")
 
-        value = icb.iloc[icb.loc[code],1]
+        value = icb.iloc[(icb["Share Code"]==code).argmax(),1]
         st.write(value)
 
     if subject == "Company":
@@ -98,8 +98,8 @@ def get_financials(code, subject, analysis):
             plt.title("Cash Flow Items")
             ax.plot(dates, numTable[0,1:], marker='o')
             ax.plot(dates, numTable[6,1:], marker='o')
-            ax.plot(dates, numTable[9,1:], marker='o')
-            plt.legend((numTable[0,0], numTable[6,0], numTable[9,0]))
+            ax.plot(dates, numTable[len(numTable[:,0])-1,1:], marker='o')
+            plt.legend((numTable[0,0], numTable[6,0], numTable[len(numTable[:,0])-1,0]))
             plt.xlabel('Time Periods')
             plt.ylabel('Rands (in Billions)')
         st.pyplot(fig)
