@@ -3,6 +3,7 @@
 #Importing custom library for web scraping
 import request_web as rwb
 import matplotlib.pyplot as plt
+import numpy as np
 import re
 import streamlit as st
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
@@ -44,6 +45,111 @@ def add_label(score):
         label ="Positive"
     return label
 
+def plot_income(sharecodes):
+    analysis = "Income"
+
+    if len(sharecodes) == 1:
+        url = f"https://finance.yahoo.com/quote/{sharecodes}.JO/financials?p={sharecodes}.JO"
+        table, dates = rwb.FinancialGetter.get_statement(rwb.FinancialGetter.get_html(url), analysis)
+
+        top_gain = (numTable[8,1] - numTable[8,-1]) / numTable[8,-1]
+        top_profit = numTable[8,1]
+        top_share = sharecodes
+
+        imp_share = sharecodes
+
+        numTable = table.to_numpy()
+        plt.title("Revenues and Profits")
+        ax.plot(dates, numTable[0,1:], marker='o')
+        ax.plot(dates, numTable[2,1:], marker='o')
+        ax.plot(dates, numTable[8,1:], marker='o')
+        plt.legend((numTable[0,0], numTable[2,0], numTable[8,0]))
+        plt.xlabel('Time Periods')
+        plt.ylabel('Rands (in Billions)')
+    else:
+        st.write(int(len(sharecodes) // 4) + 1)
+        rowLen = int(len(sharecodes) // 4) + 1
+        colLen = 4
+        rowCount = 1
+        colCount = 1
+        index = 1
+        fig, ax = plt.subplots(nrows = rowLen, ncols = colLen, figsize=(16, 12))
+
+
+
+        top_profit = -100000
+        top_gain = -1
+        top_share = ""
+        imp_share = ""
+        plt.suptitle("Revenues and Profits")
+        #tot_table= np.array([[0,0,0], [0,0,0], [0,0,0]])
+        tot_count = 0
+
+        st.write(ax)
+
+        if rowLen > 1:
+
+            for row in ax:
+                for col in row:
+                    code = sharecodes[tot_count]
+
+                    url = f"https://finance.yahoo.com/quote/{code}.JO/financials?p={code}.JO"
+                    try:
+                        table, dates = rwb.FinancialGetter.get_statement(rwb.FinancialGetter.get_html(url), analysis)
+                        numTable = table.to_numpy()
+                        if numTable[8,1] >= top_profit:
+                            top_profit = numTable[8,1]
+                            top_share = code
+
+                        gain = (numTable[8,1] - numTable[8,-1]) / numTable[8,-1]
+                        if gain >= top_gain:
+                            top_gain = gain
+                            imp_share = code
+                        col.title.set_text(code)
+                        col.plot(dates, numTable[0,1:], marker='o')
+                        #col.plot(dates, numTable[2,1:], marker='o')
+                        col.plot(dates, numTable[8,1:], marker='o')
+                        col.set_xticklabels(dates, rotation=45)
+                        col.legend((numTable[0,0], numTable[8,0]))
+                    except:
+                        st.write(f"{code} Data is Not Available" )
+
+                    tot_count += 1
+                    if len(sharecodes) == tot_count:
+                        tot_count -= 1
+        else:
+            for row in ax:
+                code = sharecodes[tot_count]
+
+                url = f"https://finance.yahoo.com/quote/{code}.JO/financials?p={code}.JO"
+                try:
+                    table, dates = rwb.FinancialGetter.get_statement(rwb.FinancialGetter.get_html(url), analysis)
+                    numTable = table.to_numpy()
+                    if numTable[8,1] >= top_profit:
+                        top_profit = numTable[8,1]
+                        top_share = code
+
+                    gain = (numTable[8,1] - numTable[8,-1]) / numTable[8,-1]
+                    if gain >= top_gain:
+                        top_gain = gain
+                        imp_share = code
+                    row.title.set_text(code)
+                    row.plot(dates, numTable[0,1:], marker='o')
+                    col.plot(dates, numTable[2,1:], marker='o')
+                    #row.plot(dates, numTable[8,1:], marker='o')
+                    row.set_xticklabels(dates, rotation=45)
+                    row.legend((numTable[0,0], numTable[2,0]))
+                except:
+                    st.write(f"{code} Data is Not Available" )
+
+                tot_count += 1
+                if len(sharecodes) == tot_count:
+                    tot_count -= 1
+
+        st.pyplot(fig)
+    return top_gain, top_profit, imp_share, top_share
+
+
 def get_sens_in_app(code, upperLimit):
     url = f"https://www.profiledata.co.za/brokersites/businesslive/Controls/Toolbox/SensSearch/SSJSONdata.aspx?date=26%20Nov%202010&enddate=31%20Dec%202020&keyword=&sharecode={code}&sectorcode="
 
@@ -59,7 +165,28 @@ def get_financials(code, subject, analysis):
         icb = rwb.SensGetter.get_icb_code("Sector_List.csv")
 
         value = icb.iloc[(icb["Share Code"]==code).argmax(),1]
-        st.write(value)
+        sharecodes = rwb.FinancialGetter.get_sector_data(value)
+        if len(sharecodes) == 0:
+            st.write("No available companies listed under this sector.")
+            table = sharecodes
+        else:
+            top_gain, top_profit, imp_share, top_share = plot_income(sharecodes)
+
+            st.subheader("Sector Breakdown")
+            st.write(f"{top_share} achieved the highest recent net profit amounting to R{top_profit}. The breakdown of their financials is below.")
+            st.write(f"{imp_share} achieved the highest improved gain in net profit over its recent history, amounting to {top_gain*100} %. The breakdown of their financials is below.")
+
+
+            url = f"https://finance.yahoo.com/quote/{top_share}.JO/financials?p={top_share}.JO"
+            table, dates = rwb.FinancialGetter.get_statement(rwb.FinancialGetter.get_html(url), analysis)
+
+            st.subheader(f"{imp_share}")
+            url = f"https://finance.yahoo.com/quote/{imp_share}.JO/financials?p={imp_share}.JO"
+            imp_table, dates = rwb.FinancialGetter.get_statement(rwb.FinancialGetter.get_html(url), analysis)
+
+            st.write(imp_table)
+
+            st.subheader(f"{top_share}")
 
     if subject == "Company":
         fig, ax = plt.subplots(figsize=(6, 6))
@@ -219,6 +346,7 @@ def main():
         else:
             share_codes = rwb.SensGetter.get_share_code("Sector_List.csv")
             sharecode = st.selectbox("JSE Sectors:", share_codes)
+            st.subheader("This may take a couple of minutes to analyse.")
 
         analysis = st.radio('Which type of analysis do you want to conduct?',('Income', 'Assets', "Cash Flow"))
         generate = st.button("Generate Analysis")

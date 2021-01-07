@@ -50,6 +50,23 @@ class FinancialGetter():
             print(f'Code: {response.status_code}, url: {url}')
         return response.text
 
+    def get_sector_data(code):
+        all_codes = []
+        if len(str(code)) == 3:
+            code = "0" + str(code)
+
+        url = f"https://www.sharedata.co.za/V2/Controls/Shares/ShareIndex/SIJSONData.aspx?indextype=SI_sector:{code}&sortfield=FULLNAME"
+        html = FinancialGetter.get_html(url)
+        soup = BeautifulSoup(html, 'lxml')
+        codeCounter = 0
+        sectorcodes = soup.find_all("a")
+        for code in sectorcodes:
+            if codeCounter % 3 == 0:
+                all_codes.append(code.text.strip())
+
+            codeCounter += 1
+        return all_codes
+
     def get_statement(html, type):
         soup = BeautifulSoup(html, 'lxml')
         financials = []
@@ -154,7 +171,7 @@ class SensGetter():
     def get_icb_code(filename):
 
         sectors = pd.read_csv(filename)
-        
+
         return sectors
 
     def get_sens_id(html):
