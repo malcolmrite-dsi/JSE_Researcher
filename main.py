@@ -47,7 +47,7 @@ def add_label(score):
 
 def plot_income(sharecodes):
     analysis = "Income"
-
+    st.write(sharecodes)
     if len(sharecodes) == 1:
         url = f"https://finance.yahoo.com/quote/{sharecodes}.JO/financials?p={sharecodes}.JO"
         table, dates = rwb.FinancialGetter.get_statement(rwb.FinancialGetter.get_html(url), analysis)
@@ -65,17 +65,15 @@ def plot_income(sharecodes):
         ax.plot(dates, numTable[8,1:], marker='o')
         plt.legend((numTable[0,0], numTable[2,0], numTable[8,0]))
         plt.xlabel('Time Periods')
-        plt.ylabel('Rands (in Billions)')
+        plt.ylabel('Rands')
     else:
-        st.write(int(len(sharecodes) // 4) + 1)
+        
         rowLen = int(len(sharecodes) // 4) + 1
         colLen = 4
         rowCount = 1
         colCount = 1
         index = 1
         fig, ax = plt.subplots(nrows = rowLen, ncols = colLen, figsize=(16, 12))
-
-
 
         top_profit = -100000
         top_gain = -1
