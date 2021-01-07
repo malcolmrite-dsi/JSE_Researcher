@@ -72,28 +72,31 @@ class FinancialGetter():
         financials = []
         header = soup.find('div', {'class': "D(tbhg)"})
         periods = []
-        columns = header.find_all("span")
-        for item in columns:
-          periods.append(item.text)
+        try:
+            columns = header.find_all("span")
+            for item in columns:
+              periods.append(item.text)
 
-        newspage = soup.find_all('div', {'data-test': "fin-row"})
-        for item in newspage:
-            row = []
-            textRow = item.find_all("span")
-            for textItem in textRow:
-                row.append(textItem.text)
+            newspage = soup.find_all('div', {'data-test': "fin-row"})
+            for item in newspage:
+                row = []
+                textRow = item.find_all("span")
+                for textItem in textRow:
+                    row.append(textItem.text)
 
-            financials.append(row)
-            traindata = pd.DataFrame(financials, columns = [periods])
-            if type == "Income" or type == "Cash Flow":
-                traindata = traindata.drop(columns = ["ttm"], level = 0)
+                financials.append(row)
+                traindata = pd.DataFrame(financials, columns = [periods])
+                if type == "Income" or type == "Cash Flow":
+                    traindata = traindata.drop(columns = ["ttm"], level = 0)
 
-        traindata.iloc[:,1:] = traindata.iloc[:,1:].apply(lambda x: x.str.replace(',', '').astype('float'))
-        headers = traindata.columns[1:].values.tolist()
-        dates = []
-        for date in headers:
-            dates.append(date[0])
-
+            traindata.iloc[:,1:] = traindata.iloc[:,1:].apply(lambda x: x.str.replace(',', '').astype('float'))
+            headers = traindata.columns[1:].values.tolist()
+            dates = []
+            for date in headers:
+                dates.append(date[0])
+        except:
+            traindata = []
+            dates = []
         return traindata, dates
 
 #Class for getting the news headlines for a specific share code

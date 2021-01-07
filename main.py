@@ -67,7 +67,7 @@ def plot_income(sharecodes):
         plt.xlabel('Time Periods')
         plt.ylabel('Rands')
     else:
-        
+
         rowLen = int(len(sharecodes) // 4) + 1
         colLen = 4
         rowCount = 1
@@ -133,10 +133,10 @@ def plot_income(sharecodes):
                         imp_share = code
                     row.title.set_text(code)
                     row.plot(dates, numTable[0,1:], marker='o')
-                    col.plot(dates, numTable[2,1:], marker='o')
+                    col.plot(dates, numTable[8,1:], marker='o')
                     #row.plot(dates, numTable[8,1:], marker='o')
                     row.set_xticklabels(dates, rotation=45)
-                    row.legend((numTable[0,0], numTable[2,0]))
+                    row.legend((numTable[0,0], numTable[8,0]))
                 except:
                     st.write(f"{code} Data is Not Available" )
 
