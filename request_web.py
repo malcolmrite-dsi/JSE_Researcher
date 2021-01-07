@@ -172,6 +172,7 @@ class SensGetter():
 
         sectors = pd.read_csv(filename)
 
+
         return sectors
 
     def get_sens_id(html):
