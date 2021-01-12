@@ -55,7 +55,14 @@ def main():
         print(item)
         print(len(share_codes))"""
 
-    file = CompanyGenerator.get_jse_sectors()
-    
+    code = "OAO"
+    url = f"https://finance.yahoo.com/quote/{code}.JO/financials?p={code}.JO"
+    html = rwb.FinancialGetter.get_html(url)
+    file = rwb.FinancialGetter.get_currency(html)
+
+    for item in file:
+        print(item)
+
+
 if __name__ == '__main__':
     main()

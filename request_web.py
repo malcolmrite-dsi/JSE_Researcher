@@ -67,6 +67,25 @@ class FinancialGetter():
             codeCounter += 1
         return all_codes
 
+    #Function to get the currency of the company selected
+    def get_currency(soup):
+
+        currency = ""
+
+        curr = soup.find('span', {'class': "Fz(xs) C($tertiaryColor) Mstart(25px) smartphone_Mstart(0px) smartphone_D(b) smartphone_Mt(5px)"})
+
+        currencies = curr.find_all("span")
+        currency = curr.text
+
+        return currency
+
+    def get_stock_title(soup):
+        heading = ""
+
+        head = soup.find("h1" , {"class": "D(ib) Fz(18px)"})
+
+        return head.text
+
     def get_statement(html, type):
         soup = BeautifulSoup(html, 'lxml')
         financials = []
@@ -94,12 +113,21 @@ class FinancialGetter():
             dates = []
             for date in headers:
                 dates.append(date[0])
+
+            currency = FinancialGetter.get_currency(soup)
+            name = FinancialGetter.get_stock_title(soup)
+
         except:
             traindata = []
             dates = []
-        return traindata, dates
+        return traindata, dates, currency, name
 
-#Class for getting the news headlines for a specific share code
+
+"""Class for getting the news headlines for a specific share code
+    Three functions are currnetly contained in this class.
+    get_sector_headlines(html) = 
+
+"""
 class NewsGetter():
     """docstring for NewsGetter."""
     def get_html(url):
