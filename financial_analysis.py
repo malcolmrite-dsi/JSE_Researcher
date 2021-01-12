@@ -101,7 +101,7 @@ class FinancialAnalyser():
                 for text in text_list:
                     st.subheader(text)
 
-            
+
 
     #Method to plot the income statement graphs for either a single company or a sector
     def plot_income(sharecodes):
@@ -162,7 +162,6 @@ class FinancialAnalyser():
                     for col in row:
                         code = sharecodes[tot_count]
 
-                        url = f"https://finance.yahoo.com/quote/{code}.JO/financials?p={code}.JO"
                         try:
                             table, dates, currency, name = FinancialAnalyser.get_financial_info(code, analysis)
                             numTable = table.to_numpy()
