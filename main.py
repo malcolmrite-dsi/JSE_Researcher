@@ -180,8 +180,9 @@ def main():
         analysis = st.radio('Which type of analysis do you want to conduct?',('Income', 'Assets', "Cash Flow"))
         generate = st.button("Generate Analysis")
         if sharecode != "" and generate:
-            fa.get_financials(sharecode, subject, analysis)
-            
+            with st.spinner("Analysing Financial Data....This May Take Some Time..."):
+                fa.get_financials(sharecode, subject, analysis)
+
 
 if __name__ == '__main__':
     main()
