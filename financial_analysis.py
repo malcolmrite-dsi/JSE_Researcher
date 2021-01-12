@@ -211,6 +211,8 @@ class FinancialAnalyser():
                             col.plot(dates, numTable[8,1:], marker='o')
                             col.set_xticklabels(dates, rotation=45)
                             col.legend((numTable[0,0], numTable[2,0],numTable[8,0]))
+
+                        #If there's an error in the graphing process, the message below is displayed
                         except:
                             st.write(f"{code} Income Statement Data is Not Available" )
 
@@ -245,6 +247,8 @@ class FinancialAnalyser():
                         row.plot(dates, numTable[8,1:], marker='o')
                         row.set_xticklabels(dates, rotation=45)
                         row.legend((numTable[0,0], numTable[2,0], numTable[8,0]))
+
+                    #If there's an error in the graphing process, the message below is displayed
                     except:
                         st.write(f"{code} Income Statement Data is Not Available" )
 
@@ -282,6 +286,8 @@ class FinancialAnalyser():
                 plt.legend((numTable[0,0], numTable[6,0], numTable[3,0]))
                 plt.xlabel('Time Periods')
                 plt.ylabel(currency)
+
+            #If there's an error in the graphing process, the message below is displayed
             except:
                 st.write(f"{sharecodes} Balance Sheet Data is Not Available" )
                 top_gain = 0
@@ -290,9 +296,9 @@ class FinancialAnalyser():
                 imp_share = sharecodes
         #if it's multiple shares
         else:
-
-            st.write(sharecodes)
             st.subheader("Shares in Sector:")
+            st.write(sharecodes)
+
             rowLen = int(len(sharecodes) // 5) + 1
             colLen = 5
             rowCount = 1
@@ -332,6 +338,8 @@ class FinancialAnalyser():
                             col.plot(dates, numTable[1,1:], marker='o')
                             col.set_xticklabels(dates, rotation=45)
                             col.legend((numTable[0,0], numTable[2,0], numTable[1,0]))
+
+                        #If there's an error in the graphing process, the message below is displayed
                         except:
                             st.write(f"{code} Balance Sheet Data is Not Available" )
 
@@ -365,6 +373,8 @@ class FinancialAnalyser():
                         row.plot(dates, numTable[2,1:], marker='o')
                         row.set_xticklabels(dates, rotation=45)
                         row.legend((numTable[0,0], numTable[1,0], numTable[2,0]))
+
+                    #If there's an error in the graphing process, the message below is displayed
                     except:
                         st.write(f"{code} Balance Sheet Data is Not Available" )
 
@@ -377,7 +387,7 @@ class FinancialAnalyser():
 
     def plot_cash(sharecodes):
         analysis = "Cash Flow"
-        st.write(sharecodes)
+
 
         #If company was selected for subject, or there's only one company in the sector
         if isinstance(sharecodes, str) or len(sharecodes) == 1:
@@ -406,6 +416,8 @@ class FinancialAnalyser():
                 plt.legend((numTable[0,0], numTable[2,0], numTable[4,0]))
                 plt.xlabel('Time Periods')
                 plt.ylabel(currency)
+
+            #If there's an error in the graphing process, the message below is displayed
             except:
                 st.write(f"{sharecodes} Cash Flow Data is Not Available" )
                 top_gain = 0
@@ -416,6 +428,8 @@ class FinancialAnalyser():
         #if it's multiple shares
         else:
 
+            st.subheader("Shares in Sector:")
+            st.write(sharecodes)
             rowLen = int(len(sharecodes) // 5) + 1
             colLen = 5
             rowCount = 1
@@ -428,7 +442,7 @@ class FinancialAnalyser():
             top_share = ""
             imp_share = ""
             plt.suptitle("Cash Flow Items")
-            #tot_table= np.array([[0,0,0], [0,0,0], [0,0,0]])
+
             tot_count = 0
 
 
@@ -458,6 +472,8 @@ class FinancialAnalyser():
                             col.plot(dates, numTable[4,1:], marker='o')
                             col.set_xticklabels(dates, rotation=45)
                             col.legend((numTable[0,0], numTable[2,0], numTable[4,0]))
+
+                        #If there's an error in the graphing process, the message below is displayed
                         except:
                             st.write(f"{code} Cash Flow Data is Not Available" )
 
@@ -491,6 +507,8 @@ class FinancialAnalyser():
                         row.plot(dates, numTable[4,1:], marker='o')
                         row.set_xticklabels(dates, rotation=45)
                         row.legend((numTable[0,0], numTable[2,0], numTable[4,0]))
+
+                    #If there's an error in the graphing process, the message below is displayed
                     except:
                         st.write(f"{code} Cash Flow Data is Not Available" )
 

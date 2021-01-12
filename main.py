@@ -130,7 +130,7 @@ def main():
     st.sidebar.subheader("Africa DSI Final Project")
     st.sidebar.write("By Malcolm Wright")
     st.sidebar.write("App is still under development, almost all the features don't work.")
-    section = st.sidebar.radio('Sections to Visit',('Company Background','Latest SENS', 'News Analyser', 'Financial Analysis','Financial Forecasting', 'Report Generator'))
+    section = st.sidebar.radio('Sections to Visit',('Company Background','Latest SENS', 'News Analyser', 'Financial Analysis','Stock Price Forecasting', 'Report Generator'))
 
     if section == 'Company Background':
         st.subheader('Company Background Summary')
@@ -182,6 +182,17 @@ def main():
         if sharecode != "" and generate:
             with st.spinner("Analysing Financial Data....This May Take Some Time..."):
                 fa.get_financials(sharecode, subject, analysis)
+
+    if section == "Stock Price Forecasting":
+        st.subheader('Stock Price Forecaster')
+
+        share_codes = rwb.SensGetter.get_share_code("JSE_company_list.csv")
+        sharecode = st.selectbox("JSE Companies:", share_codes)
+
+        generate = st.button("Generate Forecast")
+        if sharecode != "" and generate:
+            with st.spinner("Analysing Stock Price Data....This May Take Some Time..."):
+                st.write("Feature is still under construction")
 
 
 if __name__ == '__main__':
