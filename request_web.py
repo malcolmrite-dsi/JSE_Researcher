@@ -86,6 +86,26 @@ class FinancialGetter():
 
         return head.text
 
+    def get_stock_price(code):
+        url = f"https://finance.yahoo.com/quote/{code}.JO?p={code}.JO"
+        html = FinancialGetter.get_html(url)
+
+        soup = BeautifulSoup(html, 'lxml')
+
+        try:
+            prices = soup.find_all('span', {'class': "Trsdu(0.3s) Fw(b) Fz(36px) Mb(-4px) D(ib)"})
+            for price in prices:
+                price = price.text
+                price = price.replace(',', '')
+
+                price = float(price) / 100
+                
+        except:
+            price = 0
+
+        return price
+
+
     def get_statement(html, type):
         soup = BeautifulSoup(html, 'lxml')
         financials = []

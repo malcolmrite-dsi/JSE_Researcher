@@ -16,8 +16,6 @@ from Company_List_Generator import CompanyGenerator
 #http://196.30.126.229/V2/Controls/News/NewsList/NLJSONdata.aspx?jsecode=IMP&type=sens&filter=&search=
 #https://www.profiledata.co.za/BrokerSites/BusinessLive/SENS.aspx?id=372260
 
-
-
 def main():
 
 
