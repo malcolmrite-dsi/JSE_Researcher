@@ -125,7 +125,7 @@ class FinancialGetter():
 
 """Class for getting the news headlines for a specific share code
     Three functions are currnetly contained in this class.
-    get_sector_headlines(html) = 
+    get_sector_headlines(html) =
 
 """
 class NewsGetter():
@@ -295,7 +295,7 @@ class SensGetter():
             text = soup.find('pre').text.strip()
             start = text.find(title) + len(title)
             stop = text.find("Produced by the JSE SENS Department")
-            text = text[start:stop]
+            text = text[:stop]
             if text.find("Sponsor"):
                 stop2 = text.find("Sponsor")
                 text = text[:stop2]
