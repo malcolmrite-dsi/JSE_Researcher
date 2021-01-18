@@ -4,6 +4,8 @@ import requests
 from bs4 import BeautifulSoup
 import pandas as pd
 import re
+from datetime import datetime
+
 
 
 #Class for getting company background informantion
@@ -99,7 +101,7 @@ class FinancialGetter():
                 price = price.replace(',', '')
 
                 price = float(price) / 100
-                
+
         except:
             price = 0
 
@@ -132,7 +134,11 @@ class FinancialGetter():
             headers = traindata.columns[1:].values.tolist()
             dates = []
             for date in headers:
+
+                #datetime_object = datetime.strptime(date[0], '%m/%d/%Y')
+
                 dates.append(date[0])
+
 
             currency = FinancialGetter.get_currency(soup)
             name = FinancialGetter.get_stock_title(soup)

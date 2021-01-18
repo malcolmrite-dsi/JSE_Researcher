@@ -2,7 +2,7 @@ import request_web as rwb
 import matplotlib.pyplot as plt
 import numpy as np
 import streamlit as st
-
+import pandas as pd
 
 #For reference: https://www.toptal.com/finance/valuation/valuation-ratios
 #https://www.investopedia.com/ask/answers/102714/what-are-main-income-statement-ratios.asp
@@ -12,19 +12,32 @@ class ValuationCalculator():
 
         return item_list
 
+    #Returns the currency conversion for stocks that have financial data in a different currency
+    def get_currency_conversion(currencyText):
+        curr_dict = {"ZAR":1.0, "NGN":0.040, "USD":15.17, "GBP":20.59}
 
-    def calc_income_val(sharecode):
+        if currencyText == "All numbers in thousands":
+            conversion = curr_dict["ZAR"]
+        else:
+            currTextList = currencyText.split(".")
+            firstPortion = currTextList[0]
+            firstPortionList = firstPortion.split(" ")
 
-        return valuation_list
+            if firstPortionList[2] in curr_dict:
+                conversion = curr_dict[firstPortionList[2]]
+
+        return conversion
 
 
-    def calc_val(table, sharecode, analysis):
+    def calc_val(table, sharecode, analysis, currency):
 
         #Returns the current stock price of the selected company
         price = rwb.FinancialGetter.get_stock_price(sharecode)
 
+        conversion = ValuationCalculator.get_currency_conversion(currency)
+
         #Initialise the list to store the valuation metrics
-        valuation_list = []
+        valuation_list = pd.DataFrame(columns = ["Metrics", "Values", "Analysis"])
 
         #Returns the labels of the selected table as alist, to obtain the index later
         item_list = ValuationCalculator.get_item_list(table)
@@ -32,40 +45,97 @@ class ValuationCalculator():
         #Returns the common valuation metrics for an income statement
         if analysis == "Income":
 
+            #Extract the number of shares issued from the company
             noShares = table[item_list.index("Basic Average Shares"), 1]
 
-            earnings = table[item_list.index("Net Income Common Stockholders"), 1]
+            earnings = table[item_list.index("Net Income Common Stockholders"), 1] * conversion
 
             try:
-                ebit = table[item_list.index("EBIT"), 1]
+                ebit = table[item_list.index("EBIT"), 1] * conversion
             except:
                 ebit = 0
 
             try:
-                intExpense = table[item_list.index("Interest Expense"), 1]
+                intExpense = table[item_list.index("Interest Expense"), 1] * conversion
             except:
                 intExpense = 0
 
             #Total Revenue of the company
-            sales = table[item_list.index("Total Revenue"), 1]
-
+            sales = table[item_list.index("Total Revenue"), 1] * conversion
 
             #Profit Margin
-            valuation_list.append(str((round(((earnings) / sales), 4)) * 100) + "%")
+            profitM = (round(((earnings) / sales), 3)) * 100
+
+            #Conditions to determine if the profit margin is good:https://corporatefinanceinstitute.com/resources/knowledge/accounting/profit-margin/
+            if profitM > 20:
+                result = "Good"
+            elif profitM <= 0:
+                result = "Bad/Unprofitable"
+            elif profitM > 5:
+                result = "Average"
+            else:
+                result = "Low"
+
+            profitM = {"Metrics":"Profit Margin", "Values": str(profitM) + "%", "Analysis":result}
+            valuation_list = valuation_list.append(profitM,ignore_index=True)
 
             #Price to Earnings
             #https://www.investopedia.com/ask/answers/070314/how-do-i-calculate-pe-ratio-company.asp
-            valuation_list.append(round(((noShares * price) / earnings), 2))
+            ratioPE = round(((noShares * price) / earnings), 2)
+
+            #Hard to find an exact good number
+            if ratioPE > 40:
+                result = "Generally overvalued, but check sector analysis."
+            elif ratioPE < 0:
+                result = "Unprofitable"
+            else:
+                result = "The lower the PE the cheaper the stock."
+
+            pe = {"Metrics":"Price to Earnings Ratio", "Values":ratioPE,"Analysis":result}
+            valuation_list = valuation_list.append(pe,ignore_index=True)
 
             #Price to Sales
-            valuation_list.append(round(((noShares * price) / sales), 2))
+            ratioPS = round(((noShares * price) / sales), 2)
+
+            #Hard to find an exact good number
+
+            if ratioPS > 20:
+                result = "Generally overvalued, but check sector analysis."
+            elif ratioPS < 1:
+                result = "Generally Good Value, check other metrics"
+            else:
+                result = "The lower the PS the cheaper the stock."
+
+            ps ={"Metrics":"Price to Sales Ratio", "Values":ratioPS,"Analysis":result}
+            valuation_list = valuation_list.append(ps,ignore_index=True)
 
             #Earnings per Share
-            valuation_list.append(table[item_list.index("Basic EPS"), 1])
+            ratioEPS = round((earnings / noShares), 2)
+
+            if ratioEPS > price:
+                result = "Very Undervalued"
+            elif ratioEPS < 0:
+                result = "Unprofitable"
+            else:
+                result = "Check sector analysis."
+
+
+            eps = {"Metrics":"Earnings per Share", "Values":ratioEPS,"Analysis":result}
+            valuation_list = valuation_list.append(eps,ignore_index=True)
 
             #Times Interest Payment
             if intExpense != 0:
-                valuation_list.append(round(((ebit) / intExpense), 2))
+                ratioTIP = round(((ebit) / intExpense), 2)
+                #https://www.investopedia.com/ask/answers/030615/what-does-high-times-interest-earned-ratio-signify-regard-companys-future.asp
+                if ratioTIP > 5:
+                    result = "Low Risk"
+                elif ratioTIP > 2.5:
+                    result = "Acceptable Risk"
+                else:
+                    result = "High Risk/Financially Unstable"
+
+                tip = {"Metrics":"Times Interest Payment", "Values":ratioTIP,"Analysis":result}
+                valuation_list = valuation_list.append(tip,ignore_index=True)
 
         #Returns the common valuation metrics for a balance sheet
         #https://www.investopedia.com/financial-edge/1012/useful-balance-sheet-metrics.aspx
@@ -80,59 +150,145 @@ class ValuationCalculator():
             inc_item_list = ValuationCalculator.get_item_list(inc_table)
 
             #Total number of shares issues currently
-            noShares = inc_table[inc_item_list.index("Basic Average Shares"), 1]
+            noShares = inc_table[inc_item_list.index("Basic Average Shares"), 1] * conversion
 
             #Total Revenue of the company
-            sales = inc_table[inc_item_list.index("Total Revenue"), 1]
+            sales = inc_table[inc_item_list.index("Total Revenue"), 1] * conversion
 
             #Net Profit of the company
-            earnings = inc_table[inc_item_list.index("Net Income Common Stockholders"), 1]
+            earnings = inc_table[inc_item_list.index("Net Income Common Stockholders"), 1] * conversion
 
             if analysis == "Assets":
 
                 #Total Assets
-                totAssets = table[item_list.index("Total Assets"),1]
+                totAssets = table[item_list.index("Total Assets"),1] * conversion
 
                 #Net Tangible Assets: https://www.investopedia.com/terms/n/nettangibleassets.asp
-                netTangAssets = table[item_list.index("Net Tangible Assets"),1]
+                netTangAssets = table[item_list.index("Net Tangible Assets"),1] * conversion
 
                 #For Minority Interest Definition: https://www.thebalance.com/minority-interest-on-the-balance-sheet-357286
-                totLiabilities = table[item_list.index("Total Liabilities Net Minority Interest"),1]
+                totLiabilities = table[item_list.index("Total Liabilities Net Minority Interest"),1] * conversion
 
                 noShares = table[item_list.index("Ordinary Shares Number"), 1]
 
                 #Shareholder Equity
-                totEquity = table[item_list.index("Total Equity Gross Minority Interest"), 1]
+                totEquity = table[item_list.index("Total Equity Gross Minority Interest"), 1] * conversion
 
                 #https://www.wallstreetmojo.com/net-tangible-assets/
                 intangibles = totAssets - netTangAssets  - totLiabilities
 
                 #Price to Book Value Ratio
-                valuation_list.append(round(((noShares * price) / totEquity), 2))
+                ratioPB = (round(((noShares * price) / totEquity), 2))
+
+                #https://www.investopedia.com/ask/answers/010915/what-considered-good-price-book-ratio.asp
+                if ratioPB > 3:
+                    result = "Generally Overvalued"
+                elif ratioPB < 1:
+                    result = "Generally Undervalued"
+                else:
+                    result = "Check sector analysis"
+
+                pb ={"Metrics":"Price to Book Value Ratio", "Values":ratioPB,"Analysis":result}
+                valuation_list = valuation_list.append(pb,ignore_index=True)
 
                 #Return on assets: https://www.ruleoneinvesting.com/blog/how-to-invest/important-financial-metrics-that-we-use/
-                valuation_list.append(str((round((earnings / totAssets), 4)) * 100 ) + "%")
+                returnOA = (round((earnings / totAssets), 4)) * 100
+
+                if returnOA > 10:
+                    result = "Good"
+                elif returnOA <= 0:
+                    result = "Bad"
+                elif returnOA > 3:
+                    result = "Average"
+                else:
+                    result = "Low"
+
+                roa = {"Metrics":"Return on Assets", "Values": str(returnOA) + "%", "Analysis":result}
+                valuation_list = valuation_list.append(roa,ignore_index=True)
 
                 #Return on Equity: https://www.investopedia.com/ask/answers/102714/what-are-main-income-statement-ratios.asp
-                valuation_list.append(str((round((earnings / totEquity), 4)) * 100 ) + "%")
+                returnOE = (round((earnings / totEquity), 4)) * 100
+
+                #https://www.investopedia.com/terms/r/returnonequity.asp
+                if returnOE > 15:
+                    result = "Good"
+                elif returnOE <= 0:
+                    result = "Very Bad"
+                elif returnOE > 10:
+                    result = "Average"
+                else:
+                    result = "Low"
+
+                roe = {"Metrics":"Return on Equity", "Values": str(returnOE) + "%", "Analysis":result}
+                valuation_list = valuation_list.append(roe,ignore_index=True)
 
                 #Debt to Equity ratio
-                valuation_list.append(round(((totLiabilities) / totEquity), 2))
+                ratioDE = (round(((totLiabilities) / totEquity), 2))
 
-                #Intangibles to Equity ratio (Book Value)
-                valuation_list.append(round(((intangibles) / totEquity), 2))
+                #https://www.investopedia.com/ask/answers/040915/what-considered-good-net-debttoequity-ratio.asp
+                if ratioDE > 2:
+                    result = "Generally Over Leveraged"
+                elif ratioDE < 1:
+                    result = "Optimal"
+                else:
+                    result = "Average"
+
+                db ={"Metrics":"Debt to Equity Ratio", "Values":ratioDE,"Analysis":result}
+                valuation_list = valuation_list.append(db,ignore_index=True)
+
+
+                #Intangibles to Assets ratio: https://corporatefinanceinstitute.com/resources/knowledge/finance/goodwill-to-assets-ratio/
+                returnIA = (round(((intangibles) / totAssets), 2)) * 100
+
+
+                if returnIA > 40:
+                    result = "Likely Strong Brand"
+                elif returnIA < 10:
+                    result = "Likely Assets Focused"
+                else:
+                    result = "Average"
+
+                ie ={"Metrics":"Intangibles to Assets Ratio", "Values":str(returnIA) + "%","Analysis":result}
+                valuation_list = valuation_list.append(ie,ignore_index=True)
 
             #The common valuations metrics used for Cash Flow items
             #https://www.oldschoolvalue.com/stock-valuation/best-investing-metrics-ratios/
             else:
                 #Free Cash Flow
-                freeCF = table[item_list.index("Free Cash Flow"), 1]
+                freeCF = table[item_list.index("Free Cash Flow"), 1] * conversion
 
                 #Price to Free Cash Flow ratio: https://www.investopedia.com/articles/stocks/11/analyzing-price-to-cash-flow-ratio.asp
-                valuation_list.append(round(((noShares * price) / freeCF), 2))
+                ratioPCF = (round(((noShares * price) / freeCF), 2))
+
+                #https://www.nasdaq.com/articles/using-price-cash-flow-find-value-screen-week-2014-02-18
+                if ratioPCF > 30:
+                    result = "Very Poor"
+                elif ratioPCF > 20:
+                    result = "Poor"
+                elif ratioPCF <= 10 and ratioPCF > 0:
+                    result = "Good"
+                elif ratioPCF < 0:
+                    result = "Poor and Unprofitable"
+                else:
+                    result = "Average"
+
+                pcf ={"Metrics":"Price to Free Cash Flow Ratio", "Values":ratioPCF, "Analysis":result}
+                valuation_list = valuation_list.append(pcf,ignore_index=True)
 
                 #Free Cash Flow to Sales ratio as a percentage
-                valuation_list.append(str((round((freeCF / sales), 4)) * 100 ) + "%")
+                ratioCFS = (round((freeCF / sales), 4)) * 100
+
+                #https://wealthyeducation.com/free-cash-flow-to-sales-ratio
+
+                if ratioCFS > 5:
+                    result = "Good"
+                elif ratioCFS > 1:
+                    result = "Worrying"
+                else:
+                    result = "Poor"
+
+                cfs ={"Metrics":"Free Cash Flow to Sales", "Values":str(ratioCFS) + "%", "Analysis":result}
+                valuation_list = valuation_list.append(cfs,ignore_index=True)
 
         return valuation_list
 
@@ -250,7 +406,7 @@ class FinancialAnalyser():
             if top_share != "":
                 table, dates, currency, name = FinancialAnalyser.get_financial_info(top_share, analysis)
                 table = table.to_numpy()
-                valuation_list = ValuationCalculator.calc_val(table, code, analysis)
+                valuation_list = ValuationCalculator.calc_val(table, code, analysis, currency)
 
                 #Using streamlit functions to display the table, title and currency on the GUI
                 st.title(name)
@@ -340,9 +496,9 @@ class FinancialAnalyser():
                 ax.plot(dates, numTable[threeIndex,1:], marker='o')
 
                 plt.legend((numTable[oneIndex,0], numTable[twoIndex,0], numTable[threeIndex,0]))
+
                 plt.xlabel('Time Periods')
                 plt.ylabel(currency)
-
 
             except:
                 st.write(f"{sharecodes} Data is Not Available" )
