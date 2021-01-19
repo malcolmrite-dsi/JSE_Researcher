@@ -14,10 +14,14 @@ class ValuationCalculator():
 
     #Returns the currency conversion for stocks that have financial data in a different currency
     def get_currency_conversion(currencyText):
+        #Currency conversions to ZAR as of 18/01/2021
         curr_dict = {"ZAR":1.0, "NGN":0.040, "USD":15.17, "GBP":20.59}
 
+        #If the only text doesn't indicate the currency then ZAR is assumed
         if currencyText == "All numbers in thousands":
             conversion = curr_dict["ZAR"]
+
+        #This section extracts the currency from the financial data
         else:
             currTextList = currencyText.split(".")
             firstPortion = currTextList[0]
@@ -28,6 +32,64 @@ class ValuationCalculator():
 
         return conversion
 
+
+    def calc_sector_val(sharecodes, analysis):
+        sector_details_cols = [""]
+        total_cap = 0
+        #Initialise the dummy pandas series, to place the added values
+        sector_calc = pd.Series([0,0,0,0,0], index = [0,1,2,3,4])
+        sector_details = pd.Series([0,0,0,0,0],index = [0,1,2,3,4])
+        for code in sharecodes:
+            try:
+                sector_details_cols.append(code)
+                #Get the financial table for a company
+                table, dates, currency, name = FinancialAnalyser.get_financial_info(code, analysis)
+                table = table.to_numpy()
+
+                #Returns the labels of the selected table as alist, to obtain the index later
+                item_list = ValuationCalculator.get_item_list(table)
+
+                #Get the valuation metrics for a specified company
+                val_table = ValuationCalculator.calc_val(table, code, analysis, currency)
+
+                sector_details = pd.concat([sector_details, val_table["Values"]], axis=1)
+
+                #Returns the current stock price of the selected company
+                price = rwb.FinancialGetter.get_stock_price(code)
+
+                market_cap = table[item_list.index("Basic Average Shares"),1] * price
+
+                #Multiplying company metrics by market cap to proportion the average accurately
+                values = val_table["Values"] * market_cap
+
+                #Add the valuation metrics for each company
+                sector_calc = sector_calc.add(values, fill_value = 0)
+
+                #Add to the total cap of the sector in order to divide out the market caps later
+                total_cap += market_cap
+            except:
+                st.write(f"{code} Data is Not Available" )
+
+
+        #Divide the total by the amount of companies in the sector
+        sector_valuation = sector_calc / (total_cap)
+        sector_valuation = pd.concat([val_table["Metrics"], sector_valuation], axis=1)
+        sector_valuation.columns = ["Metrics", "Average Values"]
+
+        sector_details.columns = sector_details_cols
+        sector_details.drop("", inplace=True, axis = 1)
+        st.write(sector_details.T)
+        return sector_valuation
+
+    def sector_ranker(details, analysis):
+        rankings = []
+        if analysis == "Income":
+            for col in details.columns:
+                if col == 1 or col == 2:
+                    rankings.append("")
+
+
+        return rankings
 
     def calc_val(table, sharecode, analysis, currency):
 
@@ -76,7 +138,7 @@ class ValuationCalculator():
             else:
                 result = "Low"
 
-            profitM = {"Metrics":"Profit Margin", "Values": str(profitM) + "%", "Analysis":result}
+            profitM = {"Metrics":"Profit Margin %", "Values": profitM, "Analysis":result}
             valuation_list = valuation_list.append(profitM,ignore_index=True)
 
             #Price to Earnings
@@ -203,7 +265,7 @@ class ValuationCalculator():
                 else:
                     result = "Low"
 
-                roa = {"Metrics":"Return on Assets", "Values": str(returnOA) + "%", "Analysis":result}
+                roa = {"Metrics":"Return on Assets %", "Values": returnOA, "Analysis":result}
                 valuation_list = valuation_list.append(roa,ignore_index=True)
 
                 #Return on Equity: https://www.investopedia.com/ask/answers/102714/what-are-main-income-statement-ratios.asp
@@ -219,7 +281,7 @@ class ValuationCalculator():
                 else:
                     result = "Low"
 
-                roe = {"Metrics":"Return on Equity", "Values": str(returnOE) + "%", "Analysis":result}
+                roe = {"Metrics":"Return on Equity %", "Values": returnOE, "Analysis":result}
                 valuation_list = valuation_list.append(roe,ignore_index=True)
 
                 #Debt to Equity ratio
@@ -248,7 +310,7 @@ class ValuationCalculator():
                 else:
                     result = "Average"
 
-                ie ={"Metrics":"Intangibles to Assets Ratio", "Values":str(returnIA) + "%","Analysis":result}
+                ie ={"Metrics":"Intangibles to Assets %", "Values": returnIA,"Analysis":result}
                 valuation_list = valuation_list.append(ie,ignore_index=True)
 
             #The common valuations metrics used for Cash Flow items
@@ -287,7 +349,7 @@ class ValuationCalculator():
                 else:
                     result = "Poor"
 
-                cfs ={"Metrics":"Free Cash Flow to Sales", "Values":str(ratioCFS) + "%", "Analysis":result}
+                cfs ={"Metrics":"Free Cash Flow to Sales %", "Values": ratioCFS, "Analysis":result}
                 valuation_list = valuation_list.append(cfs,ignore_index=True)
 
         return valuation_list
@@ -320,91 +382,38 @@ class FinancialAnalyser():
             if len(sharecodes) == 0:
                 st.write("No available companies listed under this sector.")
 
+            #If there are companies in the sector, the financials are extracted
             else:
                 if analysis == "Income":
-                    top_gain, top_profit, imp_share, top_share = FinancialAnalyser.plot_income(sharecodes)
-
-                    st.subheader("Sector Breakdown")
-                    st.write(f"{top_share} achieved the highest recent net profit amounting to {top_profit}. The breakdown of their financials is below.")
-                    st.write(f"{imp_share} achieved the highest improved gain in net profit over its recent history, amounting to {top_gain*100} %. The breakdown of their financials is below.")
-
-
-                    top_table, top_dates, top_currency, top_name = FinancialAnalyser.get_financial_info(top_share, analysis)
-
-                    st.title(top_name)
-                    st.subheader(f"{top_share}")
-                    st.write(top_currency)
-                    st.write(top_table)
-
-                    imp_table, imp_dates, imp_currency, imp_name = FinancialAnalyser.get_financial_info(imp_share, analysis)
-
-                    st.title(imp_name)
-                    st.subheader(f"{imp_share}")
-                    st.write(imp_currency)
-                    st.write(imp_table)
+                    FinancialAnalyser.plot_income(sharecodes)
+                    st.subheader("Sector Valuation Averages")
+                    avgValues = ValuationCalculator.calc_sector_val(sharecodes, analysis)
+                    st.write(avgValues)
 
                 elif analysis == "Assets":
-                    top_gain, top_assets, imp_share, top_share = FinancialAnalyser.plot_balance(sharecodes)
-
-                    st.subheader("Sector Breakdown")
-                    st.write(f"{top_share} achieved the highest recent total assets amounting to {top_assets*1000}. The breakdown of their financials is below.")
-                    st.write(f"{imp_share} achieved the highest improved gain in total assets over its recent history, amounting to {top_gain*100} %. The breakdown of their financials is below.")
-
-                    #Getting the financial info of the most improved company
-                    top_table, top_dates, top_currency, top_name = FinancialAnalyser.get_financial_info(top_share, analysis)
-                    st.title(top_name)
-                    st.subheader(f"{top_share}")
-                    st.write(top_currency)
-                    st.write(top_table)
-
-                    #Getting the financial info of the most improved company
-                    imp_table, imp_dates, imp_currency, imp_name = FinancialAnalyser.get_financial_info(imp_share, analysis)
-
-                    st.title(imp_name)
-                    st.subheader(f"{imp_share}")
-                    st.write(imp_currency)
-                    st.write(imp_table)
+                    FinancialAnalyser.plot_balance(sharecodes)
 
                 else:
-                    top_gain, top_assets, imp_share, top_share = FinancialAnalyser.plot_cash(sharecodes)
-
-                    st.subheader("Sector Breakdown")
-                    st.write(f"{top_share} achieved the highest recent total assets amounting to {top_assets*1000}. The breakdown of their financials is below.")
-                    st.write(f"{imp_share} achieved the highest improved gain in total assets over its recent history, amounting to {top_gain*100} %. The breakdown of their financials is below.")
-
-                    #Getting the financial info of the most improved company
-                    top_table, top_dates, top_currency, top_name = FinancialAnalyser.get_financial_info(top_share, analysis)
-                    st.title(top_name)
-                    st.subheader(f"{top_share}")
-                    st.write(top_currency)
-                    st.write(top_table)
-
-                    #Getting the financial info of the most improved company
-                    imp_table, imp_dates, imp_currency, imp_name = FinancialAnalyser.get_financial_info(imp_share, analysis)
-
-                    st.title(imp_name)
-                    st.subheader(f"{imp_share}")
-                    st.write(imp_currency)
-                    st.write(imp_table)
+                    FinancialAnalyser.plot_cash(sharecodes)
 
         #In financial analysis, if company is selected, this code displays the graph and data for the company
         if subject == "Company":
 
             #This condition graphs the income statement data of the specified company
             if analysis == "Income":
-                top_gain, top_profit, imp_share, top_share = FinancialAnalyser.plot_income(code)
+                success = FinancialAnalyser.plot_income(code)
 
             #This condition graphs the balance sheet data of the specified company
             if analysis == "Assets":
-                top_gain, top_profit, imp_share, top_share = FinancialAnalyser.plot_balance(code)
+                success = FinancialAnalyser.plot_balance(code)
 
             #This condition graphs the cash flow items data of the specified company
             if analysis == "Cash Flow":
-                top_gain, top_profit, imp_share, top_share = FinancialAnalyser.plot_cash(code)
+                success = FinancialAnalyser.plot_cash(code)
 
             #If the data was avaible this condition displays the table specified with its title and currency
-            if top_share != "":
-                table, dates, currency, name = FinancialAnalyser.get_financial_info(top_share, analysis)
+            if success:
+                table, dates, currency, name = FinancialAnalyser.get_financial_info(code, analysis)
                 table = table.to_numpy()
                 valuation_list = ValuationCalculator.calc_val(table, code, analysis, currency)
 
@@ -463,7 +472,7 @@ class FinancialAnalyser():
     #Method to plot the income statement graphs for either a single company or a sector
     def plot_income(sharecodes):
         analysis = "Income"
-
+        success = True
         #If it's only one share
         if isinstance(sharecodes, str) or len(sharecodes) == 1:
             try:
@@ -475,11 +484,7 @@ class FinancialAnalyser():
                 table, dates, currency, name = FinancialAnalyser.get_financial_info(sharecodes, analysis)
                 numTable = table.to_numpy()
 
-                top_gain = (numTable[8,1] - numTable[8,-1]) / numTable[8,-1]
-                top_profit = numTable[8,1]
-                top_share = sharecodes
 
-                imp_share = sharecodes
                 st.title(name)
 
                 #Print the title of the graph
@@ -502,10 +507,7 @@ class FinancialAnalyser():
 
             except:
                 st.write(f"{sharecodes} Data is Not Available" )
-                top_gain = 0
-                top_profit = 0
-                top_share = ""
-                imp_share = sharecodes
+                success = False
 
         #if it's multiple shares
         else:
@@ -517,11 +519,6 @@ class FinancialAnalyser():
             colCount = 1
             index = 1
 
-
-            top_profit = -100000000
-            top_gain = -10
-            top_share = ""
-            imp_share = ""
             plt.suptitle("Revenues and Profits")
 
             tot_count = 0
@@ -536,14 +533,7 @@ class FinancialAnalyser():
                         try:
                             table, dates, currency, name = FinancialAnalyser.get_financial_info(code, analysis)
                             numTable = table.to_numpy()
-                            if numTable[8,1] >= top_profit:
-                                top_profit = numTable[8,1]
-                                top_share = code
 
-                            gain = (numTable[8,1] - numTable[8,-1]) / numTable[8,-1]
-                            if gain >= top_gain:
-                                top_gain = gain
-                                imp_share = code
                             col.title.set_text(code)
                             #Get the plotting indexes for the graphs
                             oneIndex, twoIndex, threeIndex = FinancialAnalyser.get_plot_indexes(list(numTable[:,0]), analysis)
@@ -577,14 +567,7 @@ class FinancialAnalyser():
                     try:
                         table, dates, currency, name = FinancialAnalyser.get_financial_info(code, analysis)
                         numTable = table.to_numpy()
-                        if numTable[8,1] >= top_profit:
-                            top_profit = numTable[8,1]
-                            top_share = code
 
-                        gain = (numTable[8,1] - numTable[8,-1]) / numTable[8,-1]
-                        if gain >= top_gain:
-                            top_gain = gain
-                            imp_share = code
 
                         #Display the company name for each graph
                         row.title.set_text(name)
@@ -611,11 +594,11 @@ class FinancialAnalyser():
                         tot_count -= 1
 
         st.pyplot(fig)
-        return top_gain, top_profit, imp_share, top_share
+        return success
 
     def plot_balance(sharecodes):
         analysis = "Assets"
-
+        success = True
         if isinstance(sharecodes, str) or len(sharecodes) == 1:
             try:
                 #Initialise the plotting figure to be dispalyed
@@ -627,11 +610,6 @@ class FinancialAnalyser():
                 table, dates, currency, name = FinancialAnalyser.get_financial_info(sharecodes, analysis)
                 numTable = table.to_numpy()
 
-                top_gain = (numTable[0,1] - numTable[0,-1]) / numTable[0,-1]
-                top_profit = numTable[0,1]
-                top_share = sharecodes
-
-                imp_share = sharecodes
                 st.title(name)
                 plt.title("Assets and Liabilities")
                 #Get the plotting indexes for the graphs
@@ -652,10 +630,7 @@ class FinancialAnalyser():
             #If there's an error in the graphing process, the message below is displayed
             except:
                 st.write(f"{sharecodes} Balance Sheet Data is Not Available" )
-                top_gain = 0
-                top_profit = 0
-                top_share = ""
-                imp_share = sharecodes
+                success = False
         #if it's multiple shares
         else:
             st.subheader("Shares in Sector:")
@@ -667,15 +642,9 @@ class FinancialAnalyser():
             colCount = 1
             index = 1
 
-
-            top_profit = -100000
-            top_gain = -1
-            top_share = ""
-            imp_share = ""
             plt.suptitle("Assets and Liabilities")
 
             tot_count = 0
-
 
             if rowLen > 1:
                 fig, ax = plt.subplots(nrows = rowLen, ncols = colLen, figsize=(16, 16))
@@ -686,14 +655,7 @@ class FinancialAnalyser():
                         try:
                             table, dates, currency, name = FinancialAnalyser.get_financial_info(code, analysis)
                             numTable = table.to_numpy()
-                            if numTable[0,1] >= top_profit:
-                                top_profit = numTable[0,1]
-                                top_share = code
 
-                            gain = (numTable[0,1] - numTable[0,-1]) / numTable[0,-1]
-                            if gain >= top_gain:
-                                top_gain = gain
-                                imp_share = code
                             col.title.set_text(code)
                             #Get the plotting indexes for the graphs
                             oneIndex, twoIndex, threeIndex = FinancialAnalyser.get_plot_indexes(list(numTable[:,0]), analysis)
@@ -726,14 +688,6 @@ class FinancialAnalyser():
                     try:
                         table, dates, currency, name = FinancialAnalyser.get_financial_info(code, analysis)
                         numTable = table.to_numpy()
-                        if numTable[0,1] >= top_profit:
-                            top_profit = numTable[0,1]
-                            top_share = code
-
-                        gain = (numTable[0,1] - numTable[0,-1]) / numTable[0,-1]
-                        if gain >= top_gain:
-                            top_gain = gain
-                            imp_share = code
 
                         #Display the company name for each graph
                         row.title.set_text(name)
@@ -758,12 +712,11 @@ class FinancialAnalyser():
                         tot_count -= 1
 
         st.pyplot(fig)
-        return top_gain, top_profit, imp_share, top_share
+        return success
 
     def plot_cash(sharecodes):
         analysis = "Cash Flow"
-
-
+        success = True
         #If company was selected for subject, or there's only one company in the sector
         if isinstance(sharecodes, str) or len(sharecodes) == 1:
 
@@ -780,12 +733,6 @@ class FinancialAnalyser():
                 table, dates, currency, name = FinancialAnalyser.get_financial_info(sharecodes, analysis)
                 numTable = table.to_numpy()
 
-
-                top_gain = (numTable[0,1] - numTable[0,-1]) / numTable[0,-1]
-                top_profit = numTable[0,1]
-                top_share = sharecodes
-
-                imp_share = sharecodes
                 st.title(name)
                 plt.title("Cash Flow Items")
                 #Get the plotting indexes for the graphs
@@ -799,18 +746,13 @@ class FinancialAnalyser():
                 ax.plot(dates, numTable[threeIndex,1:], marker='o')
                 ax.legend((numTable[oneIndex,0], numTable[twoIndex,0], numTable[threeIndex,0]))
 
-
                 plt.xlabel('Time Periods')
                 plt.ylabel(currency)
 
             #If there's an error in the graphing process, the message below is displayed
             except:
                 st.write(f"{sharecodes} Cash Flow Data is Not Available" )
-                top_gain = 0
-                top_profit = 0
-                top_share = ""
-                imp_share = sharecodes
-
+                success = False
         #if it's multiple shares
         else:
 
@@ -822,11 +764,6 @@ class FinancialAnalyser():
             colCount = 1
             index = 1
 
-
-            top_profit = -100000
-            top_gain = -1
-            top_share = ""
-            imp_share = ""
             plt.suptitle("Cash Flow Items")
 
             tot_count = 0
@@ -842,14 +779,6 @@ class FinancialAnalyser():
                         try:
                             table, dates, currency, name = FinancialAnalyser.get_financial_info(code, analysis)
                             numTable = table.to_numpy()
-                            if numTable[0,1] >= top_profit:
-                                top_profit = numTable[0,1]
-                                top_share = code
-
-                            gain = (numTable[0,1] - numTable[0,-1]) / numTable[0,-1]
-                            if gain >= top_gain:
-                                top_gain = gain
-                                imp_share = code
 
                             #Display the company name for each graph
                             col.title.set_text(code)
@@ -883,14 +812,6 @@ class FinancialAnalyser():
                     try:
                         table, dates, currency, name = FinancialAnalyser.get_financial_info(code, analysis)
                         numTable = table.to_numpy()
-                        if numTable[0,1] >= top_profit:
-                            top_profit = numTable[0,1]
-                            top_share = code
-
-                        gain = (numTable[0,1] - numTable[0,-1]) / numTable[0,-1]
-                        if gain >= top_gain:
-                            top_gain = gain
-                            imp_share = code
 
                         #Display the company name for each graph
                         row.title.set_text(name)
@@ -915,4 +836,4 @@ class FinancialAnalyser():
                         tot_count -= 1
 
         st.pyplot(fig)
-        return top_gain, top_profit, imp_share, top_share
+        return success

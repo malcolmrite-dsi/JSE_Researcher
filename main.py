@@ -19,12 +19,12 @@ from Company_List_Generator import CompanyGenerator
 def main():
 
 
-    st.title("JSE Researcher-ALPHA_TESTING")
-    st.subheader("*Cutting investment research from hours to minutes with the power of AI!*")
+    st.title("JSE Researcher")
+    st.subheader("*Cutting investment research from hours to minutes with the power of Data!*")
     st.sidebar.image("DSI-logo.jpg", use_column_width = True)
     st.sidebar.subheader("Africa DSI Final Project")
     st.sidebar.write("By Malcolm Wright")
-    st.sidebar.write("App is still under development, almost all the features don't work.")
+    st.sidebar.write("App is still under development, some of the features don't work.")
     section = st.sidebar.radio('Sections to Visit',('Company Background','Latest SENS', 'News Analyser', 'Financial Analysis','Stock Price Forecasting', 'Report Generator'))
 
     if section == 'Company Background':
