@@ -12,6 +12,7 @@ class Background():
         for text in text_list:
             st.subheader(text)
 
+        #Function to display the Management Team Table
         management = rwb.CompanyGetter.get_management(rwb.NewsGetter.get_html(f"https://finance.yahoo.com/quote/{code}.JO/profile?p={code}.JO"))
         st.subheader("Management Team")
         st.table(management)
@@ -95,7 +96,7 @@ class NewsAnalyser():
 
         if detail == 'Summary' and len(all_headlines) >= 1:
             st.subheader(NewsAnalyser.add_label(sumScore/(int(len(all_headlines)))))
-            st.write("{0:0.3f}".format(sumScore/(int(len(all_headlines)))))
+            st.write("Score: {0:0.3f}".format(sumScore/(int(len(all_headlines)))))
             st.write("The most positive headline is {0}, with a score of {1}, {2}. Here's the link {3}".format(all_headlines[highestSent], highest, full_labels[highestSent], all_links[highestSent]))
             st.write("The most negative headline is {0}, with a score of {1}, {2}. Here's the link {3}".format(all_headlines[lowestSent], lowest, full_labels[lowestSent], all_links[lowestSent]))
 

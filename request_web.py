@@ -23,10 +23,15 @@ class CompanyGetter():
         managepage = soup.find('table', class_= "W(100%)")
         managepage = managepage.find_all('tr')
         for person in managepage:
+
+            #Initialise list for each person
             details = []
             person = person.find_all('span')
             for field in person:
+                #Populate the details for a person in the management team with this list
                 details.append(field.text.strip())
+                
+            #Add the details to the larger list of of the management staff
             all_persons.append(details)
 
         return all_persons
@@ -151,28 +156,46 @@ class FinancialGetter():
 
 """Class for getting the news headlines for a specific share code
     Three functions are currnetly contained in this class.
-    get_sector_headlines(html) =
+    get_html(url) = retrive the HTML for a given URL utilising the request library
+    get_sector_headlines(html) = Retrieves headlines from the News24 website, for the specified Sector
+    get_news_headlines(html) = Retrieves headlines from the MoneyWeb website, for the specified CompanyGetter
 
 """
 class NewsGetter():
     """docstring for NewsGetter."""
     def get_html(url):
+        #Function to retrive html
         response = requests.get(url)
+
+        #If there was an error in the retrieval process. Print the error message
         if not response.ok:
             print(f'Code: {response.status_code}, url: {url}')
         return response.text
+
+
     def get_sector_headlines(html):
+
+        #Initialise two lists to store the headlines and the links retrieved for the sector
         all_company_headlines = []
         all_company_links = []
+
+        #Use BeautifulSoup to make the HTML useable
         soup = BeautifulSoup(html, 'lxml')
 
         pattern = "https:"
+
+        #This finds the artcles on the page
         newspage = soup.find_all('a', class_= "article-item--url")
 
+        #Iterate over each article
         for headline in newspage:
+            #Extracting the headline text
             head = headline.get("aria-label")
+
+            #Extracting the headline link
             newslink = headline.get("href")
 
+            #If the link is internal, add the news24 url to make it useable.
             if newslink.find(pattern):
                 newslink = "https://www.news24.com"+newslink
 
@@ -182,28 +205,37 @@ class NewsGetter():
 
             link = newslink
 
+            #Append the news likn and headline to the list
             all_company_links.append(link)
             all_company_headlines.append(head)
 
+        #Return the links and headlines
         return all_company_links, all_company_headlines
 
 
     def get_news_headlines(html):
+
+        #Initialise two lists to store the headlines and the links retrieved for the sector
         all_company_headlines = []
         all_company_links = []
         soup = BeautifulSoup(html, 'lxml')
 
-        pattern = r"^https"
+
+        #This finds the artcles on the page
         newspage = soup.find_all('h3', class_= "title list-title m0005")
 
+        #Iterate over each article
         for headline in newspage:
+            #Extracting the headline text
             headline = headline.find("a")
+
+            #Extracting the headline link
             newslink = headline.get("href")
+
             headline = headline.text.strip()
 
-            link = newslink
-
-            all_company_links.append(link)
+            #Append the news likn and headline to the list
+            all_company_links.append(newslink)
             all_company_headlines.append(headline)
 
         return all_company_links, all_company_headlines
