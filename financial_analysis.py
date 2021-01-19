@@ -41,7 +41,7 @@ class ValuationCalculator():
         sector_details = pd.Series([0,0,0,0,0],index = [0,1,2,3,4])
         for code in sharecodes:
             try:
-                sector_details_cols.append(code)
+
                 #Get the financial table for a company
                 table, dates, currency, name = FinancialAnalyser.get_financial_info(code, analysis)
                 table = table.to_numpy()
@@ -67,6 +67,8 @@ class ValuationCalculator():
 
                 #Add to the total cap of the sector in order to divide out the market caps later
                 total_cap += market_cap
+
+                sector_details_cols.append(code)
             except:
                 st.write(f"{code} Data is Not Available" )
 
