@@ -39,6 +39,7 @@ class ValuationCalculator():
     def calc_sector_val(sharecodes, analysis):
         sector_details_cols = [""]
         total_cap = 0
+        names = []
         if analysis != "Cash Flow":
             #Initialise the dummy pandas series, to place the added values
             sector_calc = pd.Series([0,0,0,0,0], index = [0,1,2,3,4])
@@ -52,7 +53,7 @@ class ValuationCalculator():
             try:
                 #Get the financial table for a company
                 table, dates, currency, name = FinancialAnalyser.get_financial_info(code, analysis)
-                st.write(name)
+                names.append([code, name])
                 table = table.to_numpy()
 
                     #Returns the labels of the selected table as alist, to obtain the index later
@@ -82,7 +83,7 @@ class ValuationCalculator():
                 st.write(f"{code} Data is Not Sufficient" )
 
 
-
+        st.write(names)
         #Divide the total by the amount of companies in the sector
         sector_valuation = sector_calc / (total_cap)
         sector_valuation = pd.concat([val_table["Metrics"], sector_valuation], axis=1)
