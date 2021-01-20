@@ -90,6 +90,17 @@ def main():
             with st.spinner("Analysing Stock Price Data....This May Take Some Time..."):
                 st.write("Feature is still under construction")
 
+    if section == "Report Generator":
+        st.subheader('Report Generator')
+        subject = st.radio('JSE Sector or Company Report?',('Company', 'Sector'))
+        if subject == "Company":
+            share_codes = rwb.SensGetter.get_share_code("JSE_company_list.csv")
+            sharecode = st.selectbox("JSE Companies:", share_codes)
+            all_opts = ["Company Background", "News Analysis", "Latest SENS", "Financial Analysis"]
+            default = ["Company Background","Financial Analysis"]
+            options = st.multiselect("What type of information do you want to in the report?", all_opts , default)
+
+            
 
 if __name__ == '__main__':
     main()

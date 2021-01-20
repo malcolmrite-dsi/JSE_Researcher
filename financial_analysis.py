@@ -12,6 +12,7 @@ class ValuationCalculator():
     def get_item_list(table):
         item_list = list(table[:,0])
 
+
         return item_list
 
     #Returns the currency conversion for stocks that have financial data in a different currency
@@ -118,6 +119,7 @@ class ValuationCalculator():
 
             earnings = table[item_list.index("Net Income Common Stockholders"), 1] * conversion
 
+            #Extract the EBIT of the company
             try:
                 ebit = table[item_list.index("EBIT"), 1] * conversion
             except:
