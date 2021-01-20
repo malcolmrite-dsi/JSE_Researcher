@@ -49,36 +49,37 @@ class ValuationCalculator():
             sector_details = pd.Series([0,0],index = [0,1])
         for code in sharecodes:
 
-
+            try:
                 #Get the financial table for a company
-            table, dates, currency, name = FinancialAnalyser.get_financial_info(code, analysis)
-            st.write(name)
-            table = table.to_numpy()
+                table, dates, currency, name = FinancialAnalyser.get_financial_info(code, analysis)
+                st.write(name)
+                table = table.to_numpy()
 
-                #Returns the labels of the selected table as alist, to obtain the index later
-            item_list = ValuationCalculator.get_item_list(table)
+                    #Returns the labels of the selected table as alist, to obtain the index later
+                item_list = ValuationCalculator.get_item_list(table)
 
-                #Get the valuation metrics for a specified company
-            val_table, inc_table, inc_item_list = ValuationCalculator.calc_val(table, code, analysis, currency)
+                    #Get the valuation metrics for a specified company
+                val_table, inc_table, inc_item_list = ValuationCalculator.calc_val(table, code, analysis, currency)
 
-            sector_details = pd.concat([sector_details, val_table["Values"]], axis=1)
+                sector_details = pd.concat([sector_details, val_table["Values"]], axis=1)
 
-                #Returns the current stock price of the selected company
-            price = rwb.FinancialGetter.get_stock_price(code)
+                    #Returns the current stock price of the selected company
+                price = rwb.FinancialGetter.get_stock_price(code)
 
-            market_cap = inc_table[inc_item_list.index("Basic Average Shares"),1] * price
+                market_cap = inc_table[inc_item_list.index("Basic Average Shares"),1] * price
 
-                #Multiplying company metrics by market cap to proportion the average accurately
-            values = val_table["Values"] * market_cap
+                    #Multiplying company metrics by market cap to proportion the average accurately
+                values = val_table["Values"] * market_cap
 
-                #Add the valuation metrics for each company
-            sector_calc = sector_calc.add(values, fill_value = 0)
+                    #Add the valuation metrics for each company
+                sector_calc = sector_calc.add(values, fill_value = 0)
 
-                #Add to the total cap of the sector in order to divide out the market caps later
-            total_cap += market_cap
+                    #Add to the total cap of the sector in order to divide out the market caps later
+                total_cap += market_cap
 
-            sector_details_cols.append(code)
-
+                sector_details_cols.append(code)
+            except:
+                st.write(f"{code} Data is Not Sufficient" )
 
 
 
