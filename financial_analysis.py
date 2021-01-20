@@ -405,7 +405,7 @@ class FinancialAnalyser():
                     FinancialAnalyser.plot_cash(sharecodes)
 
 
-
+            #If the valuation is selected run this function
             if "Valuation Metrics" in options and len(sharecodes) != 0:
                 start = timeit.default_timer()
                 #Display all of the sharecodes of the sector
