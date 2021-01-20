@@ -30,7 +30,7 @@ class CompanyGetter():
             for field in person:
                 #Populate the details for a person in the management team with this list
                 details.append(field.text.strip())
-                
+
             #Add the details to the larger list of of the management staff
             all_persons.append(details)
 
@@ -151,6 +151,8 @@ class FinancialGetter():
         except:
             traindata = []
             dates = []
+            currency = ""
+            name = ""
         return traindata, dates, currency, name
 
 

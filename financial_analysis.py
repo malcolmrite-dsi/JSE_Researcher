@@ -79,7 +79,7 @@ class ValuationCalculator():
 
             sector_details_cols.append(code)
 
-            st.write(f"{code} Data is Not Available" )
+
 
 
         #Divide the total by the amount of companies in the sector
