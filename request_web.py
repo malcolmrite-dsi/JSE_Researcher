@@ -147,7 +147,7 @@ class FinancialGetter():
 
         currency = FinancialGetter.get_currency(soup)
         name = FinancialGetter.get_stock_title(soup)
-
+        
 
             #traindata = []
             #dates = []

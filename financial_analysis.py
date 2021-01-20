@@ -49,10 +49,10 @@ class ValuationCalculator():
             sector_details = pd.Series([0,0],index = [0,1])
         for code in sharecodes:
 
-            
+
                 #Get the financial table for a company
             table, dates, currency, name = FinancialAnalyser.get_financial_info(code, analysis)
-
+            st.write(name)
             table = table.to_numpy()
 
                 #Returns the labels of the selected table as alist, to obtain the index later
