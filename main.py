@@ -30,7 +30,7 @@ def main():
     if section == 'Company Background':
         st.subheader('Company Background Summary')
         share_codes = rwb.SensGetter.get_share_code("JSE_company_list.csv")
-        sharecode = st.selectbox("JSE Companies:", share_codes)
+        sharecode = st.selectbox("Select a JSE Company:", share_codes)
         generate = st.button("Generate Background")
         if sharecode != "" and generate:
             ta.Background.get_background(sharecode)
@@ -38,7 +38,7 @@ def main():
     if section == 'Latest SENS':
         st.subheader('Latest Stock Exchange News Service Information')
         share_codes = rwb.SensGetter.get_share_code("JSE_company_list.csv")
-        sharecode = st.selectbox("JSE Companies:", share_codes)
+        sharecode = st.selectbox("Select a JSE Company:", share_codes)
         time_period = st.slider('How many SENS items should we Display?',1, 50)
         generate = st.button("Generate SENS")
         if sharecode != "" and generate:
@@ -47,13 +47,13 @@ def main():
     if section == 'News Analyser':
 
         st.subheader('News Headline Analyser')
-        subject = st.radio('JSE Sector or Company Analysis?',('Company', 'Sector'))
+        subject = st.radio('Would you like a JSE Sector or Company Analysis?',('Company', 'Sector'))
         if subject == "Company":
             share_codes = rwb.SensGetter.get_share_code("JSE_company_list.csv")
-            sharecode = st.selectbox("JSE Companies:", share_codes)
+            sharecode = st.selectbox("Select a JSE Company:", share_codes)
         else:
             share_codes = rwb.SensGetter.get_share_code("Sector_List.csv")
-            sharecode = st.selectbox("JSE Sectors:", share_codes)
+            sharecode = st.selectbox("Select a JSE Sector:", share_codes)
         time_period = st.slider('How many pages should we analyse?',2, 11)
         details = st.radio('Do you want the full list of the Headlines? Or just a Sentiment Summary',('Summary', 'Full List'))
         generate = st.button("Create List")
@@ -62,14 +62,14 @@ def main():
 
     if section == 'Financial Analysis':
         st.subheader('Financial Analyser')
-        subject = st.radio('JSE Sector or Company Analysis?',('Company', 'Sector'))
+        subject = st.radio('Would you like a JSE Sector or Company Analysis?',('Company', 'Sector'))
         if subject == "Company":
             share_codes = rwb.SensGetter.get_share_code("JSE_company_list.csv")
-            sharecode = st.selectbox("JSE Companies:", share_codes)
+            sharecode = st.selectbox("Select a JSE Company:", share_codes)
             options = ["Graphs", "Valuation Metrics", "Financial Table"]
         else:
             share_codes = rwb.SensGetter.get_share_code("Sector_List.csv")
-            sharecode = st.selectbox("JSE Sectors:", share_codes)
+            sharecode = st.selectbox("Select a JSE Sector:", share_codes)
             st.subheader("This may take a couple of minutes to analyse.")
             options = st.multiselect("What type of information do you want to display?", ["Graphs", "Valuation Metrics"], ["Graphs", "Valuation Metrics"])
 
@@ -83,7 +83,7 @@ def main():
         st.subheader('Stock Price Forecaster')
 
         share_codes = rwb.SensGetter.get_share_code("JSE_company_list.csv")
-        sharecode = st.selectbox("JSE Companies:", share_codes)
+        sharecode = st.selectbox("Select a JSE Company:", share_codes)
 
         generate = st.button("Generate Forecast")
         if sharecode != "" and generate:
@@ -92,15 +92,34 @@ def main():
 
     if section == "Report Generator":
         st.subheader('Report Generator')
-        subject = st.radio('JSE Sector or Company Report?',('Company', 'Sector'))
+        subject = st.radio('Would you like a JSE Sector or Company Report?',('Company', 'Sector'))
         if subject == "Company":
             share_codes = rwb.SensGetter.get_share_code("JSE_company_list.csv")
-            sharecode = st.selectbox("JSE Companies:", share_codes)
+            sharecode = st.selectbox("Select a JSE Company:", share_codes)
             all_opts = ["Company Background", "News Analysis", "Latest SENS", "Financial Analysis"]
             default = ["Company Background","Financial Analysis"]
             options = st.multiselect("What type of information do you want to in the report?", all_opts , default)
+        elif subject == "Sector":
+            share_codes = rwb.SensGetter.get_share_code("Sector_List.csv")
+            sharecode = st.selectbox("Select a JSE Sector:", share_codes)
+            all_opts = ["News Analysis", "Financial Analysis"]
+            default = ["News Analysis","Financial Analysis"]
+            options = st.multiselect("What type of information do you want to in the report?", all_opts , default)
 
-            
+        if "News Analysis" in options:
+            time_period = st.slider('How many pages should we analyse?',2, 11)
+            details = st.radio('Do you want the full list of the Headlines? Or just a Sentiment Summary',('Summary', 'Full List'))
+
+        if "Financial Analysis" in options:
+            finOptions = st.multiselect("What type of information do you want to display?", ["Graphs", "Valuation Metrics"], ["Graphs", "Valuation Metrics"])
+            analysis = st.multiselect('Which type of analysis do you want to conduct?',['Income', 'Assets', "Cash Flow"])
+
+        generate = st.button("Generate Report")
+        if sharecode != "" and generate:
+            with st.spinner("Analysing Stock Price Data....This May Take Some Time..."):
+                st.write("Feature is still under construction")
+
+
 
 if __name__ == '__main__':
     main()
