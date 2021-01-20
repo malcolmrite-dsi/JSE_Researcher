@@ -66,17 +66,18 @@ def main():
         if subject == "Company":
             share_codes = rwb.SensGetter.get_share_code("JSE_company_list.csv")
             sharecode = st.selectbox("JSE Companies:", share_codes)
-
+            options = ["Graphs", "Valuation Metrics", "Financial Table"]
         else:
             share_codes = rwb.SensGetter.get_share_code("Sector_List.csv")
             sharecode = st.selectbox("JSE Sectors:", share_codes)
             st.subheader("This may take a couple of minutes to analyse.")
+            options = st.multiselect("What type of information do you want to display?", ["Graphs", "Valuation Metrics"], ["Graphs", "Valuation Metrics"])
 
         analysis = st.radio('Which type of analysis do you want to conduct?',('Income', 'Assets', "Cash Flow"))
         generate = st.button("Generate Analysis")
         if sharecode != "" and generate:
             with st.spinner("Analysing Financial Data....This May Take Some Time..."):
-                fa.get_financials(sharecode, subject, analysis)
+                fa.get_financials(sharecode, subject, analysis, options)
 
     if section == "Stock Price Forecasting":
         st.subheader('Stock Price Forecaster')

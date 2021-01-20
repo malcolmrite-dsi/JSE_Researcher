@@ -1,9 +1,11 @@
+
+#Custom library containing web scraping functions
 import request_web as rwb
 import matplotlib.pyplot as plt
 import numpy as np
 import streamlit as st
 import pandas as pd
-
+import timeit
 #For reference: https://www.toptal.com/finance/valuation/valuation-ratios
 #https://www.investopedia.com/ask/answers/102714/what-are-main-income-statement-ratios.asp
 class ValuationCalculator():
@@ -15,7 +17,7 @@ class ValuationCalculator():
     #Returns the currency conversion for stocks that have financial data in a different currency
     def get_currency_conversion(currencyText):
         #Currency conversions to ZAR as of 18/01/2021
-        curr_dict = {"ZAR":1.0, "NGN":0.040, "USD":15.17, "GBP":20.59}
+        curr_dict = {"ZAR":1.0, "NGN":0.040, "USD":15.17, "GBP":20.59, "EUR":18.13}
 
         #If the only text doesn't indicate the currency then ZAR is assumed
         if currencyText == "All numbers in thousands":
@@ -36,28 +38,34 @@ class ValuationCalculator():
     def calc_sector_val(sharecodes, analysis):
         sector_details_cols = [""]
         total_cap = 0
-        #Initialise the dummy pandas series, to place the added values
-        sector_calc = pd.Series([0,0,0,0,0], index = [0,1,2,3,4])
-        sector_details = pd.Series([0,0,0,0,0],index = [0,1,2,3,4])
+        if analysis != "Cash Flow":
+            #Initialise the dummy pandas series, to place the added values
+            sector_calc = pd.Series([0,0,0,0,0], index = [0,1,2,3,4])
+            sector_details = pd.Series([0,0,0,0,0],index = [0,1,2,3,4])
+        else:
+            #Initialise the dummy pandas series, to place the added values
+            sector_calc = pd.Series([0,0], index = [0,1])
+            sector_details = pd.Series([0,0],index = [0,1])
         for code in sharecodes:
-            try:
 
+            try:
                 #Get the financial table for a company
                 table, dates, currency, name = FinancialAnalyser.get_financial_info(code, analysis)
+
                 table = table.to_numpy()
 
                 #Returns the labels of the selected table as alist, to obtain the index later
                 item_list = ValuationCalculator.get_item_list(table)
 
                 #Get the valuation metrics for a specified company
-                val_table = ValuationCalculator.calc_val(table, code, analysis, currency)
+                val_table, inc_table, inc_item_list = ValuationCalculator.calc_val(table, code, analysis, currency)
 
                 sector_details = pd.concat([sector_details, val_table["Values"]], axis=1)
 
                 #Returns the current stock price of the selected company
                 price = rwb.FinancialGetter.get_stock_price(code)
 
-                market_cap = table[item_list.index("Basic Average Shares"),1] * price
+                market_cap = inc_table[inc_item_list.index("Basic Average Shares"),1] * price
 
                 #Multiplying company metrics by market cap to proportion the average accurately
                 values = val_table["Values"] * market_cap
@@ -80,18 +88,14 @@ class ValuationCalculator():
 
         sector_details.columns = sector_details_cols
         sector_details.drop("", inplace=True, axis = 1)
-        st.write(sector_details.T)
+
+        sector_details.index = val_table["Metrics"]
+        sector_details = sector_details.T
+
+        #sector_details = sector_details.add(values, fill_value = 0)
+
+        st.write(sector_details)
         return sector_valuation
-
-    def sector_ranker(details, analysis):
-        rankings = []
-        if analysis == "Income":
-            for col in details.columns:
-                if col == 1 or col == 2:
-                    rankings.append("")
-
-
-        return rankings
 
     def calc_val(table, sharecode, analysis, currency):
 
@@ -201,6 +205,7 @@ class ValuationCalculator():
                 tip = {"Metrics":"Times Interest Payment", "Values":ratioTIP,"Analysis":result}
                 valuation_list = valuation_list.append(tip,ignore_index=True)
 
+            inc_table = table
         #Returns the common valuation metrics for a balance sheet
         #https://www.investopedia.com/financial-edge/1012/useful-balance-sheet-metrics.aspx
         #https://www.oldschoolvalue.com/financials-accounting/balance-sheet-ratios/
@@ -314,6 +319,7 @@ class ValuationCalculator():
 
                 ie ={"Metrics":"Intangibles to Assets %", "Values": returnIA,"Analysis":result}
                 valuation_list = valuation_list.append(ie,ignore_index=True)
+                item_list = inc_item_list
 
             #The common valuations metrics used for Cash Flow items
             #https://www.oldschoolvalue.com/stock-valuation/best-investing-metrics-ratios/
@@ -353,8 +359,8 @@ class ValuationCalculator():
 
                 cfs ={"Metrics":"Free Cash Flow to Sales %", "Values": ratioCFS, "Analysis":result}
                 valuation_list = valuation_list.append(cfs,ignore_index=True)
-
-        return valuation_list
+                item_list = inc_item_list
+        return valuation_list, inc_table, item_list
 
 class FinancialAnalyser():
 
@@ -373,7 +379,7 @@ class FinancialAnalyser():
         return table, dates, currency, name
 
     #General method to obtain graphs and tables for the financial analysis feature
-    def get_financials(code, subject, analysis):
+    def get_financials(code, subject, analysis, options):
         if subject == "Sector":
             icb = rwb.SensGetter.get_icb_code("Sector_List.csv")
 
@@ -385,18 +391,34 @@ class FinancialAnalyser():
                 st.write("No available companies listed under this sector.")
 
             #If there are companies in the sector, the financials are extracted
-            else:
+            elif "Graphs" in options:
                 if analysis == "Income":
                     FinancialAnalyser.plot_income(sharecodes)
-                    st.subheader("Sector Valuation Averages")
-                    avgValues = ValuationCalculator.calc_sector_val(sharecodes, analysis)
-                    st.write(avgValues)
+
 
                 elif analysis == "Assets":
                     FinancialAnalyser.plot_balance(sharecodes)
 
                 else:
                     FinancialAnalyser.plot_cash(sharecodes)
+
+
+
+            if "Valuation Metrics" in options and len(sharecodes) != 0:
+                start = timeit.default_timer()
+                #Display all of the sharecodes of the sector
+                st.subheader("Shares in Sector:")
+                st.write(sharecodes)
+
+                st.subheader("Sector Valuation Averages")
+                #Return the average valuation metrics for the sector
+                avgValues = ValuationCalculator.calc_sector_val(sharecodes, analysis)
+
+                #Display those metrics
+                st.write(avgValues)
+                stop = timeit.default_timer()
+                st.write('Time: ', round(stop - start, 2))
+                st.write('Average Time per Share: ', round((stop - start)/len(sharecodes), 2))
 
         #In financial analysis, if company is selected, this code displays the graph and data for the company
         if subject == "Company":
@@ -417,7 +439,7 @@ class FinancialAnalyser():
             if success:
                 table, dates, currency, name = FinancialAnalyser.get_financial_info(code, analysis)
                 table = table.to_numpy()
-                valuation_list = ValuationCalculator.calc_val(table, code, analysis, currency)
+                valuation_list,_,_ = ValuationCalculator.calc_val(table, code, analysis, currency)
 
                 #Using streamlit functions to display the table, title and currency on the GUI
                 st.title(name)
