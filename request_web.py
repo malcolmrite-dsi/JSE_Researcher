@@ -118,41 +118,41 @@ class FinancialGetter():
         financials = []
         header = soup.find('div', {'class': "D(tbhg)"})
         periods = []
-        try:
-            columns = header.find_all("span")
-            for item in columns:
-              periods.append(item.text)
 
-            newspage = soup.find_all('div', {'data-test': "fin-row"})
-            for item in newspage:
-                row = []
-                textRow = item.find_all("span")
-                for textItem in textRow:
-                    row.append(textItem.text)
+        columns = header.find_all("span")
+        for item in columns:
+            periods.append(item.text)
 
-                financials.append(row)
-                traindata = pd.DataFrame(financials, columns = [periods])
-                if type == "Income" or type == "Cash Flow":
-                    traindata = traindata.drop(columns = ["ttm"], level = 0)
+        newspage = soup.find_all('div', {'data-test': "fin-row"})
+        for item in newspage:
+            row = []
+            textRow = item.find_all("span")
+            for textItem in textRow:
+                row.append(textItem.text)
 
-            traindata.iloc[:,1:] = traindata.iloc[:,1:].apply(lambda x: x.str.replace(',', '').astype('float'))
-            headers = traindata.columns[1:].values.tolist()
-            dates = []
-            for date in headers:
+            financials.append(row)
+            traindata = pd.DataFrame(financials, columns = [periods])
+            if type == "Income" or type == "Cash Flow":
+                traindata = traindata.drop(columns = ["ttm"], level = 0)
+
+        traindata.iloc[:,1:] = traindata.iloc[:,1:].apply(lambda x: x.str.replace(',', '').astype('float'))
+        headers = traindata.columns[1:].values.tolist()
+        dates = []
+        for date in headers:
 
                 #datetime_object = datetime.strptime(date[0], '%m/%d/%Y')
 
-                dates.append(date[0])
+            dates.append(date[0])
 
 
-            currency = FinancialGetter.get_currency(soup)
-            name = FinancialGetter.get_stock_title(soup)
+        currency = FinancialGetter.get_currency(soup)
+        name = FinancialGetter.get_stock_title(soup)
 
-        except:
-            traindata = []
-            dates = []
-            currency = ""
-            name = ""
+
+            #traindata = []
+            #dates = []
+            #currency = ""
+            #name = ""
         return traindata, dates, currency, name
 
 
