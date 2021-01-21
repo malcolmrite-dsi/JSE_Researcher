@@ -109,3 +109,4 @@ class NewsAnalyser():
 
         elif len(all_headlines) == 0:
             st.write("There are currently no headlines for this company.")
+        return all_headlines, all_links, full_scores, full_labels, highestSent, lowestSent, sumScore

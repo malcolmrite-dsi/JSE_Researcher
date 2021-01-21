@@ -132,6 +132,7 @@ class ValuationCalculator():
             except:
                 intExpense = 0
 
+
             #Total Revenue of the company
             sales = table[item_list.index("Total Revenue"), 1] * conversion
 
@@ -199,15 +200,21 @@ class ValuationCalculator():
             if intExpense != 0:
                 ratioTIP = round(((ebit) / intExpense), 2)
                 #https://www.investopedia.com/ask/answers/030615/what-does-high-times-interest-earned-ratio-signify-regard-companys-future.asp
-                if ratioTIP > 5:
-                    result = "Low Risk"
-                elif ratioTIP > 2.5:
-                    result = "Acceptable Risk"
-                else:
-                    result = "High Risk/Financially Unstable"
+            else:
+                ratioTIP = 0
 
-                tip = {"Metrics":"Times Interest Payment", "Values":ratioTIP,"Analysis":result}
-                valuation_list = valuation_list.append(tip,ignore_index=True)
+            if ratioTIP > 5:
+                result = "Low Risk"
+            elif ratioTIP > 2.5:
+                result = "Acceptable Risk"
+            elif ratioTIP == 0:
+                result = "Data Not Available"
+            else:
+                result = "High Risk/Financially Unstable"
+            
+
+            tip = {"Metrics":"Times Interest Payment", "Values":ratioTIP,"Analysis":result}
+            valuation_list = valuation_list.append(tip,ignore_index=True)
 
             inc_table = table
         #Returns the common valuation metrics for a balance sheet

@@ -12,9 +12,13 @@ import streamlit as st
 import text_analysis as ta
 from Company_List_Generator import CompanyGenerator
 
-
+from pdf_generator import PDFGenerator as pg
+import base64
 #http://196.30.126.229/V2/Controls/News/NewsList/NLJSONdata.aspx?jsecode=IMP&type=sens&filter=&search=
 #https://www.profiledata.co.za/BrokerSites/BusinessLive/SENS.aspx?id=372260
+def create_download_link(val, filename):
+    b64 = base64.b64encode(val)  # val looks like b'...'
+    return f'<a href="data:application/octet-stream;base64,{b64.decode()}" download="{filename}.pdf">Download Report</a>'
 
 def main():
 
@@ -58,7 +62,7 @@ def main():
         details = st.radio('Do you want the full list of the Headlines? Or just a Sentiment Summary',('Summary', 'Full List'))
         generate = st.button("Create List")
         if sharecode != "" and generate:
-            ta.NewsAnalyser.get_news_in_app(sharecode, time_period, details, subject)
+            _, _, _, _, _, _, _ =ta.NewsAnalyser.get_news_in_app(sharecode, time_period, details, subject)
 
     if section == 'Financial Analysis':
         st.subheader('Financial Analyser')
@@ -108,16 +112,20 @@ def main():
 
         if "News Analysis" in options:
             time_period = st.slider('How many pages should we analyse?',2, 11)
-            details = st.radio('Do you want the full list of the Headlines? Or just a Sentiment Summary',('Summary', 'Full List'))
-
+            #details = st.radio('Do you want the full list of the Headlines? Or just a Sentiment Summary',('Summary', 'Full List'))
+            detail = ""
         if "Financial Analysis" in options:
             finOptions = st.multiselect("What type of information do you want to display?", ["Graphs", "Valuation Metrics"], ["Graphs", "Valuation Metrics"])
             analysis = st.multiselect('Which type of analysis do you want to conduct?',['Income', 'Assets', "Cash Flow"])
 
         generate = st.button("Generate Report")
         if sharecode != "" and generate:
-            with st.spinner("Analysing Stock Price Data....This May Take Some Time..."):
-                st.write("Feature is still under construction")
+            with st.spinner("Generating Report....This May Take Some Time..."):
+
+                report = pg.generate_report(sharecode,time_period, detail, subject, options)
+                html = create_download_link(report.encode("latin-1"), sharecode)
+
+                st.markdown(html, unsafe_allow_html=True)
 
 
 
