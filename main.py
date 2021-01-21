@@ -29,7 +29,7 @@ def main():
     st.sidebar.subheader("Africa DSI Final Project")
     st.sidebar.write("By Malcolm Wright")
     st.sidebar.write("App is still under development, some of the features don't work.")
-    section = st.sidebar.radio('Sections to Visit',('Company Background','Latest SENS', 'News Analyser', 'Financial Analysis','Stock Price Forecasting', 'Report Generator'))
+    section = st.sidebar.radio('Sections to Visit',('Company Background','Latest SENS', 'News Analyser', 'Financial Analysis','Stock Price Forecasting', 'PDF Report Generator'))
 
     if section == 'Company Background':
         st.subheader('Company Background Summary')
@@ -94,8 +94,8 @@ def main():
             with st.spinner("Analysing Stock Price Data....This May Take Some Time..."):
                 st.write("Feature is still under construction")
 
-    if section == "Report Generator":
-        st.subheader('Report Generator')
+    if section == "PDF Report Generator":
+        st.subheader('PDF Report Generator')
         time_period = ""
         detail = ""
         subject = st.radio('Would you like a JSE Sector or Company Report?',('Company', 'Sector'))
@@ -104,13 +104,13 @@ def main():
             sharecode = st.selectbox("Select a JSE Company:", share_codes)
             all_opts = ["Company Background", "News Analysis", "Latest SENS", "Financial Analysis"]
             default = ["Company Background","Financial Analysis"]
-            options = st.multiselect("What type of information do you want to in the report?", all_opts , default)
+            options = st.multiselect("What categories do you want to in the report?", all_opts , default)
         elif subject == "Sector":
             share_codes = rwb.SensGetter.get_share_code("Sector_List.csv")
             sharecode = st.selectbox("Select a JSE Sector:", share_codes)
             all_opts = ["News Analysis", "Financial Analysis"]
             default = ["News Analysis","Financial Analysis"]
-            options = st.multiselect("What type of information do you want to in the report?", all_opts , default)
+            options = st.multiselect("What categories do you want to in the report?", all_opts , default)
 
         if "News Analysis" in options:
             time_period = st.slider('How many pages should we analyse?',2, 11)
@@ -118,7 +118,7 @@ def main():
             detail = ""
 
         if "Financial Analysis" in options:
-            finOptions = st.multiselect("What type of information do you want to display?", ["Graphs", "Valuation Metrics"], ["Graphs", "Valuation Metrics"])
+            finOptions = st.multiselect("What type of financial analysis information do you want to display?", ["Graphs", "Valuation Metrics"], ["Graphs", "Valuation Metrics"])
             analysis = st.multiselect('Which type of analysis do you want to conduct?',['Income', 'Assets', "Cash Flow"])
 
         generate = st.button("Generate Report")
