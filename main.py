@@ -96,6 +96,7 @@ def main():
 
     if section == "Report Generator":
         st.subheader('Report Generator')
+        time_period = ""
         subject = st.radio('Would you like a JSE Sector or Company Report?',('Company', 'Sector'))
         if subject == "Company":
             share_codes = rwb.SensGetter.get_share_code("JSE_company_list.csv")
@@ -114,6 +115,7 @@ def main():
             time_period = st.slider('How many pages should we analyse?',2, 11)
             #details = st.radio('Do you want the full list of the Headlines? Or just a Sentiment Summary',('Summary', 'Full List'))
             detail = ""
+
         if "Financial Analysis" in options:
             finOptions = st.multiselect("What type of information do you want to display?", ["Graphs", "Valuation Metrics"], ["Graphs", "Valuation Metrics"])
             analysis = st.multiselect('Which type of analysis do you want to conduct?',['Income', 'Assets', "Cash Flow"])
