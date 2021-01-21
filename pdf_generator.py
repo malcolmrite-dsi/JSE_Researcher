@@ -11,6 +11,7 @@ class PDFGenerator():
         # save FPDF() class into a
         # variable pdf
         pdf = FPDF()
+        pdf.set_title(f"{code} Investment Report")
 
         PDFGenerator.create_intro_page(pdf,code, options)
 
@@ -83,7 +84,7 @@ class PDFGenerator():
                      ln = 1, align = 'L')
 
     def create_news_analysis(self, code, time_period, detail, subject):
-        all_headlines, all_links, full_scores, full_labels, highestSent, lowestSent, sumScore = ta.NewsAnalyser.get_news_in_app(code, time_period, "Summary", subject)
+        all_headlines, all_links, full_scores, full_labels, highestSent, lowestSent, sumScore = ta.NewsAnalyser.get_news_in_app(code, time_period, detail, subject)
 
         if len(all_headlines) >= 1:
             self.set_font("Helvetica", "B",size = 24)
