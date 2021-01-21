@@ -97,6 +97,7 @@ def main():
     if section == "Report Generator":
         st.subheader('Report Generator')
         time_period = ""
+        detail = ""
         subject = st.radio('Would you like a JSE Sector or Company Report?',('Company', 'Sector'))
         if subject == "Company":
             share_codes = rwb.SensGetter.get_share_code("JSE_company_list.csv")
