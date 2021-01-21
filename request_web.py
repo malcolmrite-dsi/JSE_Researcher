@@ -205,11 +205,11 @@ class NewsGetter():
                 newslink = newslink
 
 
-            link = newslink
+            link = newslink.encode('latin-1', 'replace').decode('latin-1')
 
             #Append the news likn and headline to the list
             all_company_links.append(link)
-            all_company_headlines.append(head)
+            all_company_headlines.append(head.encode('latin-1', 'replace').decode('latin-1'))
 
         #Return the links and headlines
         return all_company_links, all_company_headlines
@@ -237,8 +237,8 @@ class NewsGetter():
             headline = headline.text.strip()
 
             #Append the news likn and headline to the list
-            all_company_links.append(newslink)
-            all_company_headlines.append(headline)
+            all_company_links.append(newslink.encode('latin-1', 'replace').decode('latin-1'))
+            all_company_headlines.append(headline.encode('latin-1', 'replace').decode('latin-1'))
 
         return all_company_links, all_company_headlines
 

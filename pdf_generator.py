@@ -86,25 +86,34 @@ class PDFGenerator():
         all_headlines, all_links, full_scores, full_labels, highestSent, lowestSent, sumScore = ta.NewsAnalyser.get_news_in_app(code, time_period, "Summary", subject)
 
         if len(all_headlines) >= 1:
-            self.set_font("Helvetica", "B",size = 11)
-            self.cell(200, 5,txt = ta.NewsAnalyser.add_label(sumScore/(int(len(all_headlines)))))
-            self.cell(200, 5,txt = "Score: {0:0.3f}".format(sumScore/(int(len(all_headlines)))))
+            self.set_font("Helvetica", "B",size = 24)
+            self.cell(200, 20, txt = f"{code} News Analysis",
+                     ln = 1, align = 'C')
+            self.set_font("Helvetica", "B",size = 12)
+            self.multi_cell(200, 7,txt = "The News Analysis Summary Below. The content was found to be:")
+            score = str(sumScore/(int(len(all_headlines))))
+            self.multi_cell(200, 7,txt = ta.NewsAnalyser.add_label(float(score)))
 
-            self.set_font("Helvetica",size = 11)
-            self.multi_cell(200, 5,txt = "The most positive headline is {0}, with a score of {1}, {2}. Here's the link {3}".format(all_headlines[highestSent], full_scores[highestSent] , full_labels[highestSent], all_links[highestSent]))
-            self.multi_cell(200, 5,txt = "The most negative headline is {0}, with a score of {1}, {2}. Here's the link {3}".format(all_headlines[lowestSent], full_scores[lowestSent], full_labels[lowestSent], all_links[lowestSent]))
+            self.multi_cell(200, 7,txt = "With a Score of: {0:0.3f}".format(float(score)))
 
+            self.set_font("Helvetica",size = 12, style = "I")
+            self.multi_cell(200, 7,align = 'L',txt = "The most positive headline is {0}, with a score of {1}, {2}. Here's the link: {3}".format(all_headlines[highestSent], full_scores[highestSent] , full_labels[highestSent], all_links[highestSent]))
+            self.multi_cell(200, 7, align = 'L',txt = "The most negative headline is {0}, with a score of {1}, {2}. Here's the link: {3}".format(all_headlines[lowestSent], full_scores[lowestSent], full_labels[lowestSent], all_links[lowestSent]))
+
+            self.multi_cell(200, 5, txt = "---------------------------------------------------------------------",
+                     align = 'L')
 
             for  i, head in enumerate(all_headlines):
                 self.set_font("Helvetica", "B",size = 11)
-                self.cell(200, 2,txt = head)
+                self.multi_cell(200, 5,txt = head)
 
+                self.set_font("Helvetica",size = 11, style = "U")
+                self.multi_cell(200, 5,txt = all_links[i])
                 self.set_font("Helvetica",size = 11)
-                self.cell(200, 2,txt = all_links[i])
                 text = str(full_scores[i]) + "  " + str(full_labels[i])
-                self.cell(200, 2,txt = text)
-                self.cell(200, 5, txt = "---------------------------------------------------------------------",
-                         ln = 1, align = 'L')
+                self.multi_cell(200, 5,txt = text)
+                self.multi_cell(200, 5, txt = "---------------------------------------------------------------------",
+                         align = 'L')
 
         elif len(all_headlines) == 0:
             self.cell(200, 2,txt = "There are currently no headlines for this company.")
