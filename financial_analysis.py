@@ -97,8 +97,8 @@ class ValuationCalculator():
 
         #sector_details = sector_details.add(values, fill_value = 0)
 
-        st.write(sector_details)
-        return sector_valuation
+
+        return sector_valuation, sector_details
 
     def calc_val(table, sharecode, analysis, currency):
 
@@ -211,7 +211,7 @@ class ValuationCalculator():
                 result = "Data Not Available"
             else:
                 result = "High Risk/Financially Unstable"
-            
+
 
             tip = {"Metrics":"Times Interest Payment", "Values":ratioTIP,"Analysis":result}
             valuation_list = valuation_list.append(tip,ignore_index=True)
@@ -390,7 +390,7 @@ class FinancialAnalyser():
         return table, dates, currency, name
 
     #General method to obtain graphs and tables for the financial analysis feature
-    def get_financials(code, subject, analysis, options):
+    def get_financials(code, subject, analysis, options, pdf):
         if subject == "Sector":
             icb = rwb.SensGetter.get_icb_code("Sector_List.csv")
 
@@ -404,71 +404,91 @@ class FinancialAnalyser():
             #If there are companies in the sector, the financials are extracted
             elif "Graphs" in options:
                 if analysis == "Income":
-                    FinancialAnalyser.plot_income(sharecodes)
+                    success, fig = FinancialAnalyser.plot_income(sharecodes)
 
 
                 elif analysis == "Assets":
-                    FinancialAnalyser.plot_balance(sharecodes)
+                    success, fig = FinancialAnalyser.plot_balance(sharecodes)
 
                 else:
-                    FinancialAnalyser.plot_cash(sharecodes)
+                    success, fig = FinancialAnalyser.plot_cash(sharecodes)
 
-
+                if pdf != True:
+                    st.pyplot(fig)
+                else:
+                    fig.savefig(f"pdf_images/{code}_{analysis}.png")
             #If the valuation is selected run this function
             if "Valuation Metrics" in options and len(sharecodes) != 0:
-                start = timeit.default_timer()
-                #Display all of the sharecodes of the sector
-                st.subheader("Shares in Sector:")
-                st.write(sharecodes)
+                #If the app is used, use streamlit to display the data
+                if pdf != True:
+                    start = timeit.default_timer()
+                    #Display all of the sharecodes of the sector
+                    st.subheader("Shares in Sector:")
+                    st.write(sharecodes)
 
-                st.subheader("Sector Valuation Averages")
+                    st.subheader("Sector Valuation Averages")
+
                 #Return the average valuation metrics for the sector
-                avgValues = ValuationCalculator.calc_sector_val(sharecodes, analysis)
+                avgValues, sector_details = ValuationCalculator.calc_sector_val(sharecodes, analysis)
 
-                #Display those metrics
-                st.write(avgValues)
-                stop = timeit.default_timer()
-                st.write('Time: ', round(stop - start, 2))
-                st.write('Average Time per Share: ', round((stop - start)/len(sharecodes), 2))
+
+                if pdf != True:
+                    st.write(sector_details)
+                    #Display those metrics
+                    st.write(avgValues)
+                    stop = timeit.default_timer()
+                    st.write('Time: ', round(stop - start, 2))
+                    st.write('Average Time per Share: ', round((stop - start)/len(sharecodes), 2))
+
+
+                table = sector_details
+                valuation_list = avgValues
 
         #In financial analysis, if company is selected, this code displays the graph and data for the company
         if subject == "Company":
 
             #This condition graphs the income statement data of the specified company
             if analysis == "Income":
-                success = FinancialAnalyser.plot_income(code)
+                success, fig = FinancialAnalyser.plot_income(code)
 
             #This condition graphs the balance sheet data of the specified company
             if analysis == "Assets":
-                success = FinancialAnalyser.plot_balance(code)
+                success, fig = FinancialAnalyser.plot_balance(code)
 
             #This condition graphs the cash flow items data of the specified company
             if analysis == "Cash Flow":
-                success = FinancialAnalyser.plot_cash(code)
+                success, fig = FinancialAnalyser.plot_cash(code)
 
             #If the data was avaible this condition displays the table specified with its title and currency
             if success:
+
                 table, dates, currency, name = FinancialAnalyser.get_financial_info(code, analysis)
-                table = table.to_numpy()
-                valuation_list,_,_ = ValuationCalculator.calc_val(table, code, analysis, currency)
+                val_table = table.to_numpy()
+                valuation_list,_,_ = ValuationCalculator.calc_val(val_table, code, analysis, currency)
 
-                #Using streamlit functions to display the table, title and currency on the GUI
-                st.title(name)
+                if pdf != True:
+                    #Using streamlit functions to display the table, title and currency on the GUI
+                    st.pyplot(fig)
+                    st.title(name)
 
-                st.subheader("Valuation Metrics")
-                st.write(valuation_list)
+                    st.subheader("Valuation Metrics")
+                    st.write(valuation_list)
 
-                st.subheader(analysis + " Table")
-                st.write(currency)
-                st.write(table)
+                    st.subheader(analysis + " Table")
+                    st.write(currency)
+                    st.write(table)
+                else:
+                    fig.savefig(f"pdf_images/{code}_{analysis}.png")
 
             #If the data wasn't available the background of the company would be displayed instead
             else:
-                text_list = rwb.CompanyGetter.get_company_background(rwb.NewsGetter.get_html(f"https://www.moneyweb.co.za/tools-and-data/click-a-company/{code}/"))
+                if pdf != True:
+                    text_list = rwb.CompanyGetter.get_company_background(rwb.NewsGetter.get_html(f"https://www.moneyweb.co.za/tools-and-data/click-a-company/{code}/"))
 
-                for text in text_list:
-                    st.subheader(text)
+                    for text in text_list:
+                        st.subheader(text)
 
+        return table, valuation_list
     #This function returns the three indexes used for plotting the graphs in the financial_analysis feature
     def get_plot_indexes(numList, analysis):
 
@@ -628,8 +648,8 @@ class FinancialAnalyser():
                     if len(sharecodes) == tot_count:
                         tot_count -= 1
 
-        st.pyplot(fig)
-        return success
+
+        return success, fig
 
     def plot_balance(sharecodes):
         analysis = "Assets"
@@ -746,8 +766,9 @@ class FinancialAnalyser():
                     if len(sharecodes) == tot_count:
                         tot_count -= 1
 
-        st.pyplot(fig)
-        return success
+
+
+        return success, fig
 
     def plot_cash(sharecodes):
         analysis = "Cash Flow"
@@ -870,5 +891,6 @@ class FinancialAnalyser():
                     if len(sharecodes) == tot_count:
                         tot_count -= 1
 
-        st.pyplot(fig)
-        return success
+
+
+        return success, fig

@@ -1,14 +1,19 @@
-from fpdf import FPDF
+from fpdf import FPDF, HTMLMixin
+
 import text_analysis as ta
 
 #Importing custom library for web scraping
 import request_web as rwb
-
+#Importing custom library for financial analysis
+from financial_analysis import FinancialAnalyser as fa
 
 class PDFGenerator():
 
-    def generate_report(code,time_period, detail, subject, options):
+    def generate_report(code,time_period, detail, subject, options, finOptions):
         # save FPDF() class into a
+        class MyFPDF(FPDF, HTMLMixin):
+            pass
+
         # variable pdf
         pdf = FPDF()
         pdf.set_title(f"{code} Investment Report")
@@ -20,11 +25,20 @@ class PDFGenerator():
 
             PDFGenerator.create_company_background(pdf,code)
 
+            pdf.add_page()
+
+            PDFGenerator.create_management_table(pdf,code)
+
 
         if "News Analysis" in options:
             pdf.add_page()
 
             PDFGenerator.create_news_analysis(pdf, code, time_period, detail, subject)
+
+        if "Financial Analysis" in options:
+            pdf.add_page()
+
+            PDFGenerator.generate_financial_analysis(pdf, code, subject, finOptions)
 
         if "Latest SENS" in options:
             pdf.add_page()
@@ -119,6 +133,135 @@ class PDFGenerator():
         elif len(all_headlines) == 0:
             self.cell(200, 2,txt = "There are currently no headlines for this company.")
 
+    def create_management_table(self, code):
+        #For reference: https://pyfpdfbook.wordpress.com/2015/03/22/table-using-only-cell-borders/
+                # Remember to always put one of these at least once.
+        self.set_font("Helvetica",size = 11)
+
+        # Effective page width, or just epw
+        epw = self.w - 2*self.l_margin
+
+        # Set column width to 1/4 of effective page width to distribute content
+        # evenly across table and page
+        col_width = epw/3
+
+        # Since we do not need to draw lines anymore, there is no need to separate
+        # headers from data matrix.
+        try:
+            data =  rwb.CompanyGetter.get_management(rwb.NewsGetter.get_html(f"https://finance.yahoo.com/quote/{code}.JO/profile?p={code}.JO"))
+        except:
+            data = ["Data is not available"]
+
+        # Text height is the same as current font size
+        th = self.font_size
+
+        # Line break equivalent to 4 lines
+        self.ln(4*th)
+
+        self.set_font("Helvetica",style = "B", size = 11)
+        self.cell(epw, 0.0, 'Management Team', align='C')
+        self.set_font("Helvetica",size = 9)
+        self.ln(2* th)
+        data = data.to_numpy()
+        # Here we add more padding by passing 2*th as height
+        #Can't Text Wrap with this particular module, without breaking the table
+        for row in data:
+            col_count = 0
+            for datum in row:
+                # Enter data in colums
+                #Dictates column widths for the table
+                col_width_dict = {0: epw*(4/10), 1:epw/2, 2:epw/10}
+
+                self.cell(col_width_dict[col_count], 2*th, str(datum), border=1)
+                col_count += 1
+
+            self.ln(2*th)
+    def add_table_header(self, table, epw, subject):
+        columns = table.columns
+        #Set header font style
+        self.set_font("Helvetica",style = "B",size = 9)
+        # Text height is the same as current font size
+        th = self.font_size
+        #Dictates column widths for the table
+        if subject == "Company":
+            col_width = epw / (len(columns))
+        else:
+            col_width = epw / (len(columns) + 1)
+            self.cell(col_width, 2*th, "Index/Share Codes", border=1)
+
+        for col in columns:
+
+            # Enter data in colums
+            if isinstance(col, str):
+                self.cell(col_width, 2*th, str(col), border=1)
+            else:
+                self.cell(col_width, 2*th, str(col[0]), border=1)
+
+        self.ln(2*th)
+
+    def table_generator(self, table, epw, subject):
+        # Text height is the same as current font size
+        th = self.font_size
+        companies = table.index
+
+        table = table.to_numpy()
+        for i, row in enumerate(table):
+            #Dictates column widths for the table
+
+            col_width = epw/(len(row))
+            if subject == "Sector":
+                col_width = epw/(len(row) + 1)
+                self.cell(col_width, 2*th, str(companies[i]), border=1)
+
+            for datum in row:
+                # Enter data in colums
+
+
+                self.cell(col_width, 2*th, str(datum), border=1)
+
+
+            self.ln(2*th)
+        self.ln(2*th)
+
+    def generate_financial_analysis(self, code, subject, finOptions):
+        self.set_font("Helvetica",style = "B",size = 24)
+        analysis = "Income"
+
+        # create a cell
+        self.cell(200, 20, txt = f"{code} Financial Analysis",
+                 ln = 1, align = 'C')
+
+        table, valuation_list = fa.get_financials(code, subject, "Income", finOptions, True)
+
+        self.set_font("Helvetica",size = 9)
+
+
+
+
+
+        # Effective page width, or just epw
+        epw = self.w - 2*self.l_margin
+
+        # Set column width to 1/4 of effective page width to distribute content
+        # evenly across table and page
+        col_width = epw/5
+
+        if "Graphs" in finOptions:
+            self.image(f"pdf_images/{code}_{analysis}.png", w = epw  )
+            self.add_page()
+
+
+        #Can't Text Wrap with this particular module, without breaking the table
+        PDFGenerator.add_table_header(self, valuation_list, epw, subject)
+
+        self.set_font("Helvetica",size = 9)
+        #Generate the valuation table in the PDF report
+        PDFGenerator.table_generator(self, valuation_list, epw, subject)
+
+        PDFGenerator.add_table_header(self, table, epw, subject)
+
+        self.set_font("Helvetica",size = 9)
+        PDFGenerator.table_generator(self, table, epw, subject)
 
 
     def generate_latest_sens(self, code):

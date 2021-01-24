@@ -2,9 +2,10 @@
 
 #Importing custom library for web scraping
 import request_web as rwb
-
+#Importing custom library for financial analysis
 from financial_analysis import FinancialAnalyser as fa
-import matplotlib.pyplot as plt
+
+
 import numpy as np
 import re
 import streamlit as st
@@ -81,7 +82,7 @@ def main():
         generate = st.button("Generate Analysis")
         if sharecode != "" and generate:
             with st.spinner("Analysing Financial Data....This May Take Some Time..."):
-                fa.get_financials(sharecode, subject, analysis, options)
+                _, _ =fa.get_financials(sharecode, subject, analysis, options, False)
 
     if section == "Stock Price Forecasting":
         st.subheader('Stock Price Forecaster')
@@ -117,15 +118,16 @@ def main():
             #details = st.radio('Do you want the full list of the Headlines? Or just a Sentiment Summary',('Summary', 'Full List'))
             detail = ""
 
-        if "Financial Analysis" in options:
+        if "Financial Analysis" in options and subject == "Sector":
             finOptions = st.multiselect("What type of financial analysis information do you want to display?", ["Graphs", "Valuation Metrics"], ["Graphs", "Valuation Metrics"])
-            analysis = st.multiselect('Which type of analysis do you want to conduct?',['Income', 'Assets', "Cash Flow"])
+        else:
+            finOptions = ["Graphs", "Valuation Metrics"]
 
         generate = st.button("Generate Report")
         if sharecode != "" and generate:
             with st.spinner("Generating Report....This May Take Some Time..."):
 
-                report = pg.generate_report(sharecode,time_period, detail, subject, options)
+                report = pg.generate_report(sharecode,time_period, detail, subject, options, finOptions)
                 html = create_download_link(report.encode("latin-1"), sharecode)
 
                 st.markdown(html, unsafe_allow_html=True)

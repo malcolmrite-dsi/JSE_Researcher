@@ -26,14 +26,19 @@ class CompanyGetter():
 
             #Initialise list for each person
             details = []
-            person = person.find_all('span')
-            for field in person:
+            person = person.find_all('span', class_="")
+            for i,field in enumerate(person):
                 #Populate the details for a person in the management team with this list
                 details.append(field.text.strip())
+                if i == 2:
+                    break
 
+            details = pd.Series(details, index = [0,1,2])
             #Add the details to the larger list of of the management staff
             all_persons.append(details)
 
+
+        all_persons = pd.DataFrame(all_persons)
         return all_persons
 
     def get_company_background(html):
