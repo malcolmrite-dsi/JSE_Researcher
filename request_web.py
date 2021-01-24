@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 import pandas as pd
 import re
 from datetime import datetime
-
+import streamlit as st
 
 
 
@@ -160,7 +160,7 @@ class FinancialGetter():
             currency = ""
             name = ""
 
-            print(inst)
+            st.write(inst)
         return traindata, dates, currency, name
 
 
