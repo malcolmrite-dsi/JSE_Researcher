@@ -36,9 +36,11 @@ class PDFGenerator():
 
         if "Financial Analysis" in options:
             pdf.add_page()
-
-            PDFGenerator.generate_financial_analysis(pdf, code, subject, finOptions)
-
+            try:
+                PDFGenerator.generate_financial_analysis(pdf, code, subject, finOptions)
+            except:
+                pdf.cell(200, 20, txt = f"No Data Available",
+                         ln = 10, align = 'C')
 
         if "News Analysis" in options:
             pdf.add_page()
