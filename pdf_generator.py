@@ -269,10 +269,10 @@ class PDFGenerator():
             #If there's a list of company names, print them out in full for each table
             if isinstance(names, list):
                 for company in names:
-                    self.cell(200, 5, txt = f"{company[0]}",
-                             ln = 0, align = 'C')
-                    self.cell(200, 5, txt = f"{company[1]}",
-                             ln = 1, align = 'C')
+                    self.cell(100, 5, txt = f"{company[0]}",
+                             ln = 0, align = 'L')
+                    self.cell(100, 5, txt = f"{company[1]}",
+                             ln = 1, align = 'R')
             else:
                 self.cell(200, 5, txt = f"{names}",
                          ln = 1, align = 'C')
