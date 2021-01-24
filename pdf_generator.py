@@ -32,10 +32,10 @@ class PDFGenerator():
             try:
                 PDFGenerator.create_management_table(pdf,code)
             except:
-                pdf.set_font("Helvetica",style = "B", size = 11)
-                pdf.cell(200, 0.0, 'Management Team', align='C')
-                pdf.cell(200, 20, txt = f"No Data Available",
-                         ln = 10, align = 'C')
+                pdf.set_font("Helvetica",style = "B", size = 24)
+                pdf.cell(200, 0.0, 'Management Team', align='C', ln = 1)
+                pdf.cell(200, 20, txt = "No Data Available",
+                          align = 'C')
 
         if "Financial Analysis" in options:
             pdf.add_page()
