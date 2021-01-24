@@ -32,13 +32,17 @@ class PDFGenerator():
             try:
                 PDFGenerator.create_management_table(pdf,code)
             except:
-                pdf
+                pdf.set_font("Helvetica",style = "B", size = 11)
+                pdf.cell(epw, 0.0, 'Management Team', align='C')
+                pdf.cell(200, 20, txt = f"No Data Available",
+                         ln = 10, align = 'C')
 
         if "Financial Analysis" in options:
             pdf.add_page()
             try:
                 PDFGenerator.generate_financial_analysis(pdf, code, subject, finOptions)
             except:
+        
                 pdf.cell(200, 20, txt = f"No Data Available",
                          ln = 10, align = 'C')
 
@@ -155,11 +159,10 @@ class PDFGenerator():
 
         # Since we do not need to draw lines anymore, there is no need to separate
         # headers from data matrix.
-        try:
-            data =  rwb.CompanyGetter.get_management(rwb.NewsGetter.get_html(f"https://finance.yahoo.com/quote/{code}.JO/profile?p={code}.JO"))
-            data = data.to_numpy()
-        except:
-            data = ["Data is not available"]
+
+        data =  rwb.CompanyGetter.get_management(rwb.NewsGetter.get_html(f"https://finance.yahoo.com/quote/{code}.JO/profile?p={code}.JO"))
+        data = data.to_numpy()
+
 
         # Text height is the same as current font size
         th = self.font_size
