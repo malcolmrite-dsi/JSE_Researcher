@@ -390,7 +390,7 @@ class FinancialAnalyser():
         else:
             url = f"https://finance.yahoo.com/quote/{sharecode}.JO/cash-flow?p={sharecode}.JO"
 
-        time.sleep(0.5)
+        time.sleep(1)
         table, dates, currency, name = rwb.FinancialGetter.get_statement(rwb.FinancialGetter.get_html(url), analysis)
 
         return table, dates, currency, name
@@ -590,8 +590,9 @@ class FinancialAnalyser():
                             currency, dates, name = FinancialAnalyser.plot_chart(col, col, code, analysis)
                             col.set_xticklabels(dates, rotation=45)
                         #If there's an error in the graphing process, the message below is displayed
-                        except:
+                        except Exception as inst:
                             st.write(f"{code} {analysis} Data is Not Available" )
+                            st.write(f"{inst}" )
 
                         tot_count += 1
                         if len(sharecodes) == tot_count:
