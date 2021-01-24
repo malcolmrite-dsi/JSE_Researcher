@@ -82,7 +82,7 @@ def main():
         generate = st.button("Generate Analysis")
         if sharecode != "" and generate:
             with st.spinner("Analysing Financial Data....This May Take Some Time..."):
-                _, _ =fa.get_financials(sharecode, subject, analysis, options, False)
+                _, _, _ =fa.get_financials(sharecode, subject, analysis, options, False)
 
     if section == "Stock Price Forecasting":
         st.subheader('Stock Price Forecaster')

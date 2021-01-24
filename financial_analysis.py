@@ -87,7 +87,7 @@ class ValuationCalculator():
                 st.write(f"{code} Data is Not Sufficient" )
 
 
-        st.write(names)
+        #st.write(names)
         #Divide the total by the amount of companies in the sector
         sector_valuation = sector_calc / (total_cap)
         sector_valuation = sector_valuation.round(1)
@@ -103,7 +103,7 @@ class ValuationCalculator():
         #sector_details = sector_details.add(values, fill_value = 0)
 
 
-        return sector_valuation, sector_details
+        return sector_valuation, sector_details, names
 
     def calc_val(table, sharecode, analysis, currency):
 
@@ -429,7 +429,7 @@ class FinancialAnalyser():
                     st.subheader("Sector Valuation Averages")
 
                 #Return the average valuation metrics for the sector
-                avgValues, sector_details = ValuationCalculator.calc_sector_val(sharecodes, analysis)
+                avgValues, sector_details, names = ValuationCalculator.calc_sector_val(sharecodes, analysis)
 
 
                 if pdf != True:
@@ -457,6 +457,7 @@ class FinancialAnalyser():
                 val_table = table.to_numpy()
                 valuation_list,_,_ = ValuationCalculator.calc_val(val_table, code, analysis, currency)
 
+                names = name
                 if pdf != True:
                     #Using streamlit functions to display the table, title and currency on the GUI
                     st.pyplot(fig)
@@ -480,7 +481,7 @@ class FinancialAnalyser():
                     for text in text_list:
                         st.subheader(text)
 
-        return table, valuation_list
+        return table, valuation_list, names
     #This function returns the three indexes used for plotting the graphs in the financial_analysis feature
     def get_plot_indexes(numList, analysis):
 

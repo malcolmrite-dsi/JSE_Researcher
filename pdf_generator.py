@@ -262,9 +262,20 @@ class PDFGenerator():
         self.cell(200, 20, txt = f"{code} Financial Analysis",
                  ln = 1, align = 'C')
         for i, analysis in enumerate(analyses):
-            table, valuation_list = fa.get_financials(code, subject, analysis, finOptions, True)
+            table, valuation_list, names = fa.get_financials(code, subject, analysis, finOptions, True)
 
             self.set_font("Helvetica",size = 9)
+
+            #If there's a list of company names, print them out in full for each table
+            if isinstance(names, list):
+                for company in names:
+                    self.cell(200, 5, txt = f"{company[0]}",
+                             ln = 0, align = 'C')
+                    self.cell(200, 5, txt = f"{company[1]}",
+                             ln = 1, align = 'C')
+            else:
+                self.cell(200, 5, txt = f"{names}",
+                         ln = 1, align = 'C')
 
 
             # Effective page width, or just epw
