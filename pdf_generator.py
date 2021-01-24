@@ -44,7 +44,7 @@ class PDFGenerator():
             except:
 
                 pdf.cell(200, 20, txt = f"No Data Available",
-                         ln = 10, align = 'C')
+                         ln = 1, align = 'C')
 
         if "News Analysis" in options:
             pdf.add_page()
@@ -195,13 +195,21 @@ class PDFGenerator():
         # Text height is the same as current font size
         th = self.font_size
         #Dictates column widths for the table
+        col_count = 0
         if subject == "Company":
             col_width = epw / (len(columns))
         else:
-            col_width = epw / (len(columns) + 1)
-            self.cell(col_width, 2*th, "Index/Share Codes", border=1)
+            col_count += 1
+            col_width = epw / ((len(columns) + 1)*2)
+            self.cell(col_width, 2*th, "Index", border=1)
 
         for col in columns:
+            if col_count == 0:
+                col_width = (5*epw) / (3*len(columns))
+            elif subject == "Sector":
+                col_width = (9*epw) / (10*len(columns))
+            else:
+                col_width = (7*epw) / (10*len(columns))
 
             # Enter data in colums
             if isinstance(col, str):
@@ -209,6 +217,7 @@ class PDFGenerator():
             else:
                 self.cell(col_width, 2*th, str(col[0]), border=1)
 
+            col_count += 1
         self.ln(2*th)
 
     def table_generator(self, table, epw, subject):
@@ -217,20 +226,27 @@ class PDFGenerator():
         companies = table.index
 
         table = table.to_numpy()
+
         for i, row in enumerate(table):
             #Dictates column widths for the table
+            col_count = 0
 
-            col_width = epw/(len(row))
             if subject == "Sector":
-                col_width = epw/(len(row) + 1)
+                col_count += 1
+                col_width = epw / ((len(row) + 1)*2)
                 self.cell(col_width, 2*th, str(companies[i]), border=1)
 
             for datum in row:
                 # Enter data in colums
-
+                if col_count == 0:
+                    col_width = (5*epw) / (3*len(row))
+                elif subject == "Sector":
+                    col_width = (9*epw) / (10*len(row))
+                else:
+                    col_width = (7*epw) / (10*len(row))
 
                 self.cell(col_width, 2*th, str(datum), border=1)
-
+                col_count += 1
 
             self.ln(2*th)
         self.ln(2*th)

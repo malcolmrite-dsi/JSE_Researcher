@@ -66,7 +66,7 @@ class ValuationCalculator():
                     #Get the valuation metrics for a specified company
                 val_table, inc_table, inc_item_list = ValuationCalculator.calc_val(table, code, analysis, currency)
 
-                sector_details = pd.concat([sector_details, val_table["Values"]], axis=1)
+                sector_details = pd.concat([sector_details, val_table["Values"].round(2)], axis=1)
 
                     #Returns the current stock price of the selected company
                 price = rwb.FinancialGetter.get_stock_price(code)
@@ -90,6 +90,7 @@ class ValuationCalculator():
         st.write(names)
         #Divide the total by the amount of companies in the sector
         sector_valuation = sector_calc / (total_cap)
+        sector_valuation = sector_valuation.round(1)
         sector_valuation = pd.concat([val_table["Metrics"], sector_valuation], axis=1)
         sector_valuation.columns = ["Metrics", "Average Values"]
 
@@ -162,11 +163,11 @@ class ValuationCalculator():
 
             #Hard to find an exact good number
             if ratioPE > 40:
-                result = "Generally overvalued, but check sector analysis."
+                result = "Generally Over Valued."
             elif ratioPE < 0:
                 result = "Unprofitable"
             else:
-                result = "The lower the PE the cheaper the stock."
+                result = "Lower PE = Better Value"
 
             pe = {"Metrics":"Price to Earnings Ratio", "Values":ratioPE,"Analysis":result}
             valuation_list = valuation_list.append(pe,ignore_index=True)
@@ -177,11 +178,11 @@ class ValuationCalculator():
             #Hard to find an exact good number
 
             if ratioPS > 20:
-                result = "Generally overvalued, but check sector analysis."
+                result = "Generally Over Valued."
             elif ratioPS < 1:
-                result = "Generally Good Value, check other metrics"
+                result = "Generally Good Value"
             else:
-                result = "The lower the PS the cheaper the stock."
+                result = "Lower PS = Better Value"
 
             ps ={"Metrics":"Price to Sales Ratio", "Values":ratioPS,"Analysis":result}
             valuation_list = valuation_list.append(ps,ignore_index=True)
@@ -421,7 +422,7 @@ class FinancialAnalyser():
                     st.pyplot(fig)
                 else:
                     with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmpfile:
-                        fig.savefig(f"tmpfile.pdf_images/{code}_{analysis}.png")
+                        fig.savefig(f"tmpfile.{code}_{analysis}.png")
             #If the valuation is selected run this function
             if "Valuation Metrics" in options and len(sharecodes) != 0:
                 #If the app is used, use streamlit to display the data
