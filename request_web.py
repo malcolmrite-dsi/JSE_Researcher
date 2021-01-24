@@ -8,6 +8,7 @@ from datetime import datetime
 
 
 
+
 #Class for getting company background informantion
 class CompanyGetter():
     def get_html(url):

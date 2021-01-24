@@ -6,7 +6,7 @@ import numpy as np
 import streamlit as st
 import pandas as pd
 import timeit
-
+import time
 #Saving images as tempfiles
 import tempfile
 
@@ -390,6 +390,7 @@ class FinancialAnalyser():
         else:
             url = f"https://finance.yahoo.com/quote/{sharecode}.JO/cash-flow?p={sharecode}.JO"
 
+        time.sleep(0.5)
         table, dates, currency, name = rwb.FinancialGetter.get_statement(rwb.FinancialGetter.get_html(url), analysis)
 
         return table, dates, currency, name
