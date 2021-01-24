@@ -83,8 +83,11 @@ class ValuationCalculator():
                 total_cap += market_cap
 
                 sector_details_cols.append(code)
-            except:
+            except Exception as inst:
+
                 st.write(f"{code} Data is Not Sufficient" )
+                st.write(f"{inst}")
+
 
 
         #st.write(names)
