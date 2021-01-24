@@ -60,7 +60,7 @@ class FinancialGetter():
     def get_html(url):
         response = requests.get(url)
         if not response.ok:
-            print(f'Code: {response.status_code}, url: {url}')
+            st.write(f'Code: {response.status_code}, url: {url}')
         return response.text
 
     def get_sector_data(code):
