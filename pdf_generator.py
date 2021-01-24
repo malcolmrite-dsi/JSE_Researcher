@@ -29,7 +29,15 @@ class PDFGenerator():
 
             pdf.add_page()
 
-            PDFGenerator.create_management_table(pdf,code)
+            try:
+                PDFGenerator.create_management_table(pdf,code)
+            except:
+                pdf
+
+        if "Financial Analysis" in options:
+            pdf.add_page()
+
+            PDFGenerator.generate_financial_analysis(pdf, code, subject, finOptions)
 
 
         if "News Analysis" in options:
@@ -37,10 +45,6 @@ class PDFGenerator():
 
             PDFGenerator.create_news_analysis(pdf, code, time_period, detail, subject)
 
-        if "Financial Analysis" in options:
-            pdf.add_page()
-
-            PDFGenerator.generate_financial_analysis(pdf, code, subject, finOptions)
 
         if "Latest SENS" in options:
             pdf.add_page()
@@ -151,6 +155,7 @@ class PDFGenerator():
         # headers from data matrix.
         try:
             data =  rwb.CompanyGetter.get_management(rwb.NewsGetter.get_html(f"https://finance.yahoo.com/quote/{code}.JO/profile?p={code}.JO"))
+            data = data.to_numpy()
         except:
             data = ["Data is not available"]
 
@@ -164,7 +169,7 @@ class PDFGenerator():
         self.cell(epw, 0.0, 'Management Team', align='C')
         self.set_font("Helvetica",size = 9)
         self.ln(2* th)
-        data = data.to_numpy()
+
         # Here we add more padding by passing 2*th as height
         #Can't Text Wrap with this particular module, without breaking the table
         for row in data:
@@ -252,7 +257,7 @@ class PDFGenerator():
             #https://discuss.streamlit.io/t/creating-a-pdf-file-generator/7613/10
             self.image(f"tmpfile.{code}_{analysis}.png", w = epw  )
             self.add_page()
-            os.remove(f"tmpfile.{code}_{analysis}.png") 
+            os.remove(f"tmpfile.{code}_{analysis}.png")
 
 
         #Can't Text Wrap with this particular module, without breaking the table
