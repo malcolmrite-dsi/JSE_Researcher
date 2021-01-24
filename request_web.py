@@ -120,7 +120,7 @@ class FinancialGetter():
 
 
     def get_statement(html, type):
-        st.write(html)
+
         soup = BeautifulSoup(html, 'lxml')
         financials = []
         header = soup.find('div', {'class': "D(tbhg)"})
@@ -161,7 +161,6 @@ class FinancialGetter():
             currency = ""
             name = ""
 
-            st.write(inst)
         return traindata, dates, currency, name
 
 

@@ -86,7 +86,7 @@ class ValuationCalculator():
             except Exception as inst:
 
                 st.write(f"{code} Data is Not Sufficient" )
-                st.write(f"{inst}")
+
 
 
 
@@ -393,7 +393,7 @@ class FinancialAnalyser():
         else:
             url = f"https://finance.yahoo.com/quote/{sharecode}.JO/cash-flow?p={sharecode}.JO"
 
-        time.sleep(1)
+        #time.sleep(1)
         table, dates, currency, name = rwb.FinancialGetter.get_statement(rwb.FinancialGetter.get_html(url), analysis)
 
         return table, dates, currency, name
