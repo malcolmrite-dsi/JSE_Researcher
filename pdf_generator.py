@@ -33,7 +33,7 @@ class PDFGenerator():
                 PDFGenerator.create_management_table(pdf,code)
             except:
                 pdf.set_font("Helvetica",style = "B", size = 11)
-                pdf.cell(epw, 0.0, 'Management Team', align='C')
+                pdf.cell(200, 0.0, 'Management Team', align='C')
                 pdf.cell(200, 20, txt = f"No Data Available",
                          ln = 10, align = 'C')
 
@@ -42,7 +42,7 @@ class PDFGenerator():
             try:
                 PDFGenerator.generate_financial_analysis(pdf, code, subject, finOptions)
             except:
-        
+
                 pdf.cell(200, 20, txt = f"No Data Available",
                          ln = 10, align = 'C')
 
