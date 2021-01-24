@@ -6,6 +6,10 @@ import numpy as np
 import streamlit as st
 import pandas as pd
 import timeit
+
+#Saving images as tempfiles
+import tempfile
+
 #For reference: https://www.toptal.com/finance/valuation/valuation-ratios
 #https://www.investopedia.com/ask/answers/102714/what-are-main-income-statement-ratios.asp
 class ValuationCalculator():
@@ -416,7 +420,8 @@ class FinancialAnalyser():
                 if pdf != True:
                     st.pyplot(fig)
                 else:
-                    fig.savefig(f"pdf_images/{code}_{analysis}.png")
+                    with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmpfile:
+                        fig.savefig(f"tmpfile.pdf_images/{code}_{analysis}.png")
             #If the valuation is selected run this function
             if "Valuation Metrics" in options and len(sharecodes) != 0:
                 #If the app is used, use streamlit to display the data
@@ -478,7 +483,8 @@ class FinancialAnalyser():
                     st.write(currency)
                     st.write(table)
                 else:
-                    fig.savefig(f"pdf_images/{code}_{analysis}.png")
+                    with tempfile.NamedTemporaryFile(delete=False, suffix=".png") as tmpfile:
+                        fig.savefig(f"tmpfile.{code}_{analysis}.png")
 
             #If the data wasn't available the background of the company would be displayed instead
             else:

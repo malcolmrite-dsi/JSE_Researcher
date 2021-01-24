@@ -248,7 +248,7 @@ class PDFGenerator():
         col_width = epw/5
 
         if "Graphs" in finOptions:
-            self.image(f"pdf_images/{code}_{analysis}.png", w = epw  )
+            self.image(f"tmpfile.{code}_{analysis}.png", w = epw  )
             self.add_page()
 
 
