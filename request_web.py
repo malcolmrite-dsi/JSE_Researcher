@@ -154,11 +154,13 @@ class FinancialGetter():
             currency = FinancialGetter.get_currency(soup)
             name = FinancialGetter.get_stock_title(soup)
 
-        except:
+        except Exception as inst:
             traindata = []
             dates = []
             currency = ""
             name = ""
+
+            print(inst)
         return traindata, dates, currency, name
 
 
