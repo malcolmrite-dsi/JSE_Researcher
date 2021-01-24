@@ -8,20 +8,20 @@ import request_web as rwb
 from financial_analysis import FinancialAnalyser as fa
 import os
 
+import streamlit as st
+
 class PDFGenerator():
 
     #Takes 6 arguments for the different operations
     def generate_report(code,time_period, detail, subject, options, finOptions):
-        # save FPDF() class into a
-        class MyFPDF(FPDF, HTMLMixin):
-            pass
+        my_bar = st.progress(0)
 
         # variable pdf
         pdf = FPDF()
         pdf.set_title(f"{code} Investment Report")
 
         PDFGenerator.create_intro_page(pdf,code, options)
-
+        my_bar.progress(20)
         if "Company Background" in options:
             pdf.add_page()
 
@@ -36,22 +36,22 @@ class PDFGenerator():
                 pdf.cell(200, 0.0, 'Management Team', align='C', ln = 1)
                 pdf.cell(200, 20, txt = "No Data Available",
                           align = 'C')
-
+        my_bar.progress(40)
         if "Financial Analysis" in options:
             pdf.add_page()
             try:
-                PDFGenerator.generate_financial_analysis(pdf, code, subject, finOptions)
+                PDFGenerator.generate_financial_analysis(pdf, code, subject, finOptions, my_bar)
             except:
 
                 pdf.cell(200, 20, txt = f"No Data Available",
                          ln = 1, align = 'C')
-
+        my_bar.progress(60)
         if "News Analysis" in options:
             pdf.add_page()
 
             PDFGenerator.create_news_analysis(pdf, code, time_period, detail, subject)
 
-
+        my_bar.progress(80)
         if "Latest SENS" in options:
             pdf.add_page()
 
@@ -60,6 +60,7 @@ class PDFGenerator():
 
         # save the pdf with name .pdf
         report = pdf.output(dest="S")
+        my_bar.progress(100)
         return report
 
     def create_intro_page(self, code, options):
@@ -204,8 +205,9 @@ class PDFGenerator():
             self.cell(col_width, 2*th, "Index", border=1)
 
         for col in columns:
-            if col_count == 0:
-                col_width = (5*epw) / (3*len(columns))
+            #For the detailed financial table for an individual company
+            if col_count == 0 and len(columns) > 3:
+                col_width = (6*epw) / (3*len(columns))
             elif subject == "Sector":
                 col_width = (9*epw) / (10*len(columns))
             else:
@@ -220,6 +222,7 @@ class PDFGenerator():
             col_count += 1
         self.ln(2*th)
 
+    #Generates a table for the financial analysis section of the report based on the table given
     def table_generator(self, table, epw, subject):
         # Text height is the same as current font size
         th = self.font_size
@@ -238,8 +241,8 @@ class PDFGenerator():
 
             for datum in row:
                 # Enter data in colums
-                if col_count == 0:
-                    col_width = (5*epw) / (3*len(row))
+                if col_count == 0 and len(row) > 3:
+                    col_width = (6*epw) / (3*len(row))
                 elif subject == "Sector":
                     col_width = (9*epw) / (10*len(row))
                 else:
@@ -251,47 +254,57 @@ class PDFGenerator():
             self.ln(2*th)
         self.ln(2*th)
 
-    def generate_financial_analysis(self, code, subject, finOptions):
+    def generate_financial_analysis(self, code, subject, finOptions, bar):
         self.set_font("Helvetica",style = "B",size = 24)
-        analysis = "Income"
+        analyses = ["Income", "Assets", "Cash Flow"]
 
         # create a cell
         self.cell(200, 20, txt = f"{code} Financial Analysis",
                  ln = 1, align = 'C')
+        for i, analysis in enumerate(analyses):
+            table, valuation_list = fa.get_financials(code, subject, analysis, finOptions, True)
 
-        table, valuation_list = fa.get_financials(code, subject, "Income", finOptions, True)
-
-        self.set_font("Helvetica",size = 9)
-
-
+            self.set_font("Helvetica",size = 9)
 
 
+            # Effective page width, or just epw
+            epw = self.w - 2*self.l_margin
 
-        # Effective page width, or just epw
-        epw = self.w - 2*self.l_margin
+            # Set column width to 1/4 of effective page width to distribute content
+            # evenly across table and page
+            col_width = epw/5
 
-        # Set column width to 1/4 of effective page width to distribute content
-        # evenly across table and page
-        col_width = epw/5
+            if "Graphs" in finOptions:
+                #https://discuss.streamlit.io/t/creating-a-pdf-file-generator/7613/10
+                self.image(f"tmpfile.{code}_{analysis}.png", w = epw  )
+                self.add_page()
+                os.remove(f"tmpfile.{code}_{analysis}.png")
 
-        if "Graphs" in finOptions:
-            #https://discuss.streamlit.io/t/creating-a-pdf-file-generator/7613/10
-            self.image(f"tmpfile.{code}_{analysis}.png", w = epw  )
-            self.add_page()
-            os.remove(f"tmpfile.{code}_{analysis}.png")
+            if "Valuation Metrics" in finOptions:
+                # create header cell
+                self.set_font("Helvetica",style = "B",size = 14)
+                self.cell(200, 20, txt = f"{code} {analysis} Valuation Metrics",
+                         ln = 1, align = 'C')
+
+                #Can't Text Wrap with this particular module, without breaking the table
+                PDFGenerator.add_table_header(self, valuation_list, epw, subject)
+
+                self.set_font("Helvetica",size = 9)
+                #Generate the valuation table in the PDF report
+                PDFGenerator.table_generator(self, valuation_list, epw, subject)
 
 
-        #Can't Text Wrap with this particular module, without breaking the table
-        PDFGenerator.add_table_header(self, valuation_list, epw, subject)
+            self.set_font("Helvetica",style = "B",size = 14)
+            # create a cell
+            self.cell(200, 20, txt = f"{code} Detailed {analysis} Table",
+                     ln = 1, align = 'C')
 
-        self.set_font("Helvetica",size = 9)
-        #Generate the valuation table in the PDF report
-        PDFGenerator.table_generator(self, valuation_list, epw, subject)
+            PDFGenerator.add_table_header(self, table, epw, subject)
 
-        PDFGenerator.add_table_header(self, table, epw, subject)
+            self.set_font("Helvetica",size = 9)
+            PDFGenerator.table_generator(self, table, epw, subject)
 
-        self.set_font("Helvetica",size = 9)
-        PDFGenerator.table_generator(self, table, epw, subject)
+            bar.progress(40 + ((i+ 1) * 6))
 
 
     def generate_latest_sens(self, code):

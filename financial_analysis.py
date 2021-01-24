@@ -397,6 +397,8 @@ class FinancialAnalyser():
     #General method to obtain graphs and tables for the financial analysis feature
     def get_financials(code, subject, analysis, options, pdf):
         if subject == "Sector":
+            table = []
+            valuation_list = []
             icb = rwb.SensGetter.get_icb_code("Sector_List.csv")
 
             value = icb.iloc[(icb["Share Code"]==code).argmax(),1]
@@ -408,15 +410,7 @@ class FinancialAnalyser():
 
             #If there are companies in the sector, the financials are extracted
             elif "Graphs" in options:
-                if analysis == "Income":
-                    success, fig = FinancialAnalyser.plot_income(sharecodes)
-
-
-                elif analysis == "Assets":
-                    success, fig = FinancialAnalyser.plot_balance(sharecodes)
-
-                else:
-                    success, fig = FinancialAnalyser.plot_cash(sharecodes)
+                success, fig = FinancialAnalyser.plot_finance(sharecodes, analysis)
 
                 if pdf != True:
                     st.pyplot(fig)
@@ -453,17 +447,8 @@ class FinancialAnalyser():
         #In financial analysis, if company is selected, this code displays the graph and data for the company
         if subject == "Company":
 
-            #This condition graphs the income statement data of the specified company
-            if analysis == "Income":
-                success, fig = FinancialAnalyser.plot_income(code)
-
-            #This condition graphs the balance sheet data of the specified company
-            if analysis == "Assets":
-                success, fig = FinancialAnalyser.plot_balance(code)
-
-            #This condition graphs the cash flow items data of the specified company
-            if analysis == "Cash Flow":
-                success, fig = FinancialAnalyser.plot_cash(code)
+            #This condition graphs the specified analysis of the specified company
+            success, fig = FinancialAnalyser.plot_finance(code, analysis)
 
             #If the data was avaible this condition displays the table specified with its title and currency
             if success:
@@ -532,8 +517,29 @@ class FinancialAnalyser():
 
         return TRIndex, GPIndex, NPIndex
     #Method to plot the income statement graphs for either a single company or a sector
-    def plot_income(sharecodes):
-        analysis = "Income"
+
+    def plot_chart(fig, ax, sharecodes, analysis):
+
+        table, dates, currency, name = FinancialAnalyser.get_financial_info(sharecodes, analysis)
+        table = table.to_numpy()
+        #Get the plotting indexes for the graphs
+        oneIndex, twoIndex, threeIndex = FinancialAnalyser.get_plot_indexes(list(table[:,0]), analysis)
+
+
+
+        #Plotting the graph lines with markers
+        ax.plot(dates, table[oneIndex,1:], marker='o')
+
+        ax.plot(dates, table[twoIndex,1:], marker='o')
+
+        ax.plot(dates, table[threeIndex,1:], marker='o')
+
+        fig.legend((table[oneIndex,0], table[twoIndex,0], table[threeIndex,0]), loc = 7)
+
+        return currency, dates, name
+
+    def plot_finance(sharecodes, analysis):
+
         success = True
         #If it's only one share
         if isinstance(sharecodes, str) or len(sharecodes) == 1:
@@ -543,45 +549,31 @@ class FinancialAnalyser():
                 #Initialise the plotting figure to be dispalyed
                 fig, ax = plt.subplots(figsize=(6, 6))
 
-                table, dates, currency, name = FinancialAnalyser.get_financial_info(sharecodes, analysis)
-                numTable = table.to_numpy()
-
-
-                st.title(name)
-
-                #Print the title of the graph
-                plt.title("Revenues and Profits")
-
-                #Get the plotting indexes for the graphs
-                oneIndex, twoIndex, threeIndex = FinancialAnalyser.get_plot_indexes(list(numTable[:,0]), analysis)
-
-                #Plotting the graph lines with markers
-                ax.plot(dates, numTable[oneIndex,1:], marker='o')
-
-                ax.plot(dates, numTable[twoIndex,1:], marker='o')
-
-                ax.plot(dates, numTable[threeIndex,1:], marker='o')
-
-                plt.legend((numTable[oneIndex,0], numTable[twoIndex,0], numTable[threeIndex,0]))
-
-                plt.xlabel('Time Periods')
+                currency, _ , _= FinancialAnalyser.plot_chart(fig, ax, sharecodes, analysis)
                 plt.ylabel(currency)
+                plt.xlabel('Time Periods')
+
+                if analysis == "Income":
+                    #Print the title of the graph
+                    plt.title("Revenues and Profits")
+
+                elif analysis == "Assets":
+                    #Print the title of the graph
+                    plt.title("Assets and Liabilities")
+
+                else:
+                    plt.title("Cash Flow Items")
 
             except:
                 st.write(f"{sharecodes} Data is Not Available" )
                 success = False
 
-        #if it's multiple shares
         else:
-            st.subheader("Shares in Sector:")
-            st.write(sharecodes)
             rowLen = int(len(sharecodes) // 5) + 1
             colLen = 5
             rowCount = 1
             colCount = 1
             index = 1
-
-            plt.suptitle("Revenues and Profits")
 
             tot_count = 0
 
@@ -591,313 +583,51 @@ class FinancialAnalyser():
                 for row in ax:
                     for col in row:
                         code = sharecodes[tot_count]
-
                         try:
-                            table, dates, currency, name = FinancialAnalyser.get_financial_info(code, analysis)
-                            numTable = table.to_numpy()
-
                             col.title.set_text(code)
-                            #Get the plotting indexes for the graphs
-                            oneIndex, twoIndex, threeIndex = FinancialAnalyser.get_plot_indexes(list(numTable[:,0]), analysis)
-
-                            #Plotting the graph lines with markers
-                            col.plot(dates, numTable[oneIndex,1:], marker='o')
-
-                            col.plot(dates, numTable[twoIndex,1:], marker='o')
-
-                            col.plot(dates, numTable[threeIndex,1:], marker='o')
-
-                            col.legend((numTable[oneIndex,0], numTable[twoIndex,0], numTable[threeIndex,0]))
+                            currency, dates, name = FinancialAnalyser.plot_chart(col, col, code, analysis)
                             col.set_xticklabels(dates, rotation=45)
-
                         #If there's an error in the graphing process, the message below is displayed
                         except:
-                            st.write(f"{code} Income Statement Data is Not Available" )
+                            st.write(f"{code} {analysis} Data is Not Available" )
 
                         tot_count += 1
                         if len(sharecodes) == tot_count:
                             tot_count -= 1
+
             #If the amount of companies is less than five
             else:
+                #Custom number of columns in the plotted figure
                 colLen = len(sharecodes)
 
                 #Initialise plotting figures for the specified column length on one row
                 fig, ax = plt.subplots(nrows = rowLen, ncols = colLen, figsize=(16, 8))
                 for row in ax:
                     code = sharecodes[tot_count]
-
                     try:
-                        table, dates, currency, name = FinancialAnalyser.get_financial_info(code, analysis)
-                        numTable = table.to_numpy()
 
-
-                        #Display the company name for each graph
-                        row.title.set_text(name)
-                        #Get the plotting indexes for the graphs
-                        oneIndex, twoIndex, threeIndex = FinancialAnalyser.get_plot_indexes(list(numTable[:,0]), analysis)
-
-                        #Plotting the graph lines with markers
-                        row.plot(dates, numTable[oneIndex,1:], marker='o')
-
-                        row.plot(dates, numTable[twoIndex,1:], marker='o')
-
-                        row.plot(dates, numTable[threeIndex,1:], marker='o')
-
-                        row.legend((numTable[oneIndex,0], numTable[twoIndex,0], numTable[threeIndex,0]))
+                        currency, dates, name  = FinancialAnalyser.plot_chart(row, row, code, analysis)
                         row.set_xticklabels(dates, rotation=45)
 
-
+                        row.title.set_text(name)
                     #If there's an error in the graphing process, the message below is displayed
                     except:
-                        st.write(f"{code} Income Statement Data is Not Available" )
+                        st.write(f"{code} {analysis} Data is Not Available" )
 
                     tot_count += 1
                     if len(sharecodes) == tot_count:
                         tot_count -= 1
 
+            if analysis == "Income":
+                #Print the title of the graph
+                plt.suptitle("Revenues and Profits")
 
-        return success, fig
+            elif analysis == "Assets":
+                #Print the title of the graph
+                plt.suptitle("Assets and Liabilities")
 
-    def plot_balance(sharecodes):
-        analysis = "Assets"
-        success = True
-        if isinstance(sharecodes, str) or len(sharecodes) == 1:
-            try:
-                #Initialise the plotting figure to be dispalyed
-                fig, ax = plt.subplots(figsize=(6, 6))
-
-                if isinstance(sharecodes, list):
-                    sharecodes = sharecodes[0]
-                #Function to retrieve the table and dates for the specified company and analysis
-                table, dates, currency, name = FinancialAnalyser.get_financial_info(sharecodes, analysis)
-                numTable = table.to_numpy()
-
-                st.title(name)
-                plt.title("Assets and Liabilities")
-                #Get the plotting indexes for the graphs
-                oneIndex, twoIndex, threeIndex = FinancialAnalyser.get_plot_indexes(list(numTable[:,0]), analysis)
-
-                #Plotting the graph lines with markers
-                ax.plot(dates, numTable[oneIndex,1:], marker='o')
-
-                ax.plot(dates, numTable[twoIndex,1:], marker='o')
-
-                ax.plot(dates, numTable[threeIndex,1:], marker='o')
-
-                plt.legend((numTable[oneIndex,0], numTable[twoIndex,0], numTable[threeIndex,0]))
-
-                plt.xlabel('Time Periods')
-                plt.ylabel(currency)
-
-            #If there's an error in the graphing process, the message below is displayed
-            except:
-                st.write(f"{sharecodes} Balance Sheet Data is Not Available" )
-                success = False
-        #if it's multiple shares
-        else:
-            st.subheader("Shares in Sector:")
-            st.write(sharecodes)
-
-            rowLen = int(len(sharecodes) // 5) + 1
-            colLen = 5
-            rowCount = 1
-            colCount = 1
-            index = 1
-
-            plt.suptitle("Assets and Liabilities")
-
-            tot_count = 0
-
-            if rowLen > 1:
-                fig, ax = plt.subplots(nrows = rowLen, ncols = colLen, figsize=(16, 16))
-                for row in ax:
-                    for col in row:
-                        code = sharecodes[tot_count]
-
-                        try:
-                            table, dates, currency, name = FinancialAnalyser.get_financial_info(code, analysis)
-                            numTable = table.to_numpy()
-
-                            col.title.set_text(code)
-                            #Get the plotting indexes for the graphs
-                            oneIndex, twoIndex, threeIndex = FinancialAnalyser.get_plot_indexes(list(numTable[:,0]), analysis)
-
-                            #Plotting the graph lines with markers
-                            col.plot(dates, numTable[oneIndex,1:], marker='o')
-
-                            col.plot(dates, numTable[twoIndex,1:], marker='o')
-
-                            col.plot(dates, numTable[threeIndex,1:], marker='o')
-
-                            col.legend((numTable[oneIndex,0], numTable[twoIndex,0], numTable[threeIndex,0]))
-                            col.set_xticklabels(dates, rotation=45)
-
-                        #If there's an error in the graphing process, the message below is displayed
-                        except:
-                            st.write(f"{code} Balance Sheet Data is Not Available" )
-
-                        tot_count += 1
-                        if len(sharecodes) == tot_count:
-                            tot_count -= 1
-
-            #Condition if the amount of companies is less than five
             else:
-                colLen = len(sharecodes)
-                fig, ax = plt.subplots(nrows = rowLen, ncols = colLen, figsize=(16, 8))
-                for row in ax:
-                    code = sharecodes[tot_count]
-
-                    try:
-                        table, dates, currency, name = FinancialAnalyser.get_financial_info(code, analysis)
-                        numTable = table.to_numpy()
-
-                        #Display the company name for each graph
-                        row.title.set_text(name)
-                        #Get the plotting indexes for the graphs
-                        oneIndex, twoIndex, threeIndex = FinancialAnalyser.get_plot_indexes(list(numTable[:,0]), analysis)
-
-                        #Plotting the graph lines with markers
-                        row.plot(dates, numTable[oneIndex,1:], marker='o')
-
-                        row.plot(dates, numTable[twoIndex,1:], marker='o')
-
-                        row.plot(dates, numTable[threeIndex,1:], marker='o')
-
-                        row.legend((numTable[oneIndex,0], numTable[twoIndex,0], numTable[threeIndex,0]))
-                        row.set_xticklabels(dates, rotation=45)
-                    #If there's an error in the graphing process, the message below is displayed
-                    except:
-                        st.write(f"{code} Balance Sheet Data is Not Available" )
-
-                    tot_count += 1
-                    if len(sharecodes) == tot_count:
-                        tot_count -= 1
-
-
-
-        return success, fig
-
-    def plot_cash(sharecodes):
-        analysis = "Cash Flow"
-        success = True
-        #If company was selected for subject, or there's only one company in the sector
-        if isinstance(sharecodes, str) or len(sharecodes) == 1:
-
-            try:
-
-                #Extract the sigle sharecode if the sector list only has one company
-                if isinstance(sharecodes, list):
-                    sharecodes = sharecodes[0]
-
-                #Initialise the plotting figure to be dispalyed
-                fig, ax = plt.subplots(figsize=(6, 6))
-
-                #Function to retrieve the table and dates for the specified company and analysis
-                table, dates, currency, name = FinancialAnalyser.get_financial_info(sharecodes, analysis)
-                numTable = table.to_numpy()
-
-                st.title(name)
-                plt.title("Cash Flow Items")
-                #Get the plotting indexes for the graphs
-                oneIndex, twoIndex, threeIndex = FinancialAnalyser.get_plot_indexes(list(numTable[:,0]), analysis)
-
-                #Plotting the graph lines with markers
-                ax.plot(dates, numTable[oneIndex,1:], marker='o')
-
-                ax.plot(dates, numTable[twoIndex,1:], marker='o')
-
-                ax.plot(dates, numTable[threeIndex,1:], marker='o')
-                ax.legend((numTable[oneIndex,0], numTable[twoIndex,0], numTable[threeIndex,0]))
-
-                plt.xlabel('Time Periods')
-                plt.ylabel(currency)
-
-            #If there's an error in the graphing process, the message below is displayed
-            except:
-                st.write(f"{sharecodes} Cash Flow Data is Not Available" )
-                success = False
-        #if it's multiple shares
-        else:
-
-            st.subheader("Shares in Sector:")
-            st.write(sharecodes)
-            rowLen = int(len(sharecodes) // 5) + 1
-            colLen = 5
-            rowCount = 1
-            colCount = 1
-            index = 1
-
-            plt.suptitle("Cash Flow Items")
-
-            tot_count = 0
-
-
-            if rowLen > 1:
-                fig, ax = plt.subplots(nrows = rowLen, ncols = colLen, figsize=(16, 16))
-                for row in ax:
-                    for col in row:
-                        code = sharecodes[tot_count]
-
-
-                        try:
-                            table, dates, currency, name = FinancialAnalyser.get_financial_info(code, analysis)
-                            numTable = table.to_numpy()
-
-                            #Display the company name for each graph
-                            col.title.set_text(code)
-                            #Get the plotting indexes for the graphs
-                            oneIndex, twoIndex, threeIndex = FinancialAnalyser.get_plot_indexes(list(numTable[:,0]), analysis)
-
-                            #Plotting the graph lines with markers
-                            col.plot(dates, numTable[oneIndex,1:], marker='o')
-
-                            col.plot(dates, numTable[twoIndex,1:], marker='o')
-
-                            col.plot(dates, numTable[threeIndex,1:], marker='o')
-
-                            col.legend((numTable[oneIndex,0], numTable[twoIndex,0], numTable[threeIndex,0]))
-                            col.set_xticklabels(dates, rotation=45)
-                        #If there's an error in the graphing process, the message below is displayed
-                        except:
-                            st.write(f"{code} Cash Flow Data is Not Available" )
-
-                        tot_count += 1
-                        if len(sharecodes) == tot_count:
-                            tot_count -= 1
-
-            #Condition if the amount of companies is less than five
-            else:
-                colLen = len(sharecodes)
-                fig, ax = plt.subplots(nrows = rowLen, ncols = colLen, figsize=(16, 8))
-                for row in ax:
-                    code = sharecodes[tot_count]
-
-                    try:
-                        table, dates, currency, name = FinancialAnalyser.get_financial_info(code, analysis)
-                        numTable = table.to_numpy()
-
-                        #Display the company name for each graph
-                        row.title.set_text(name)
-                        #Get the plotting indexes for the graphs
-                        oneIndex, twoIndex, threeIndex = FinancialAnalyser.get_plot_indexes(list(numTable[:,0]), analysis)
-
-                        #Plotting the graph lines with markers
-                        row.plot(dates, numTable[oneIndex,1:], marker='o')
-
-                        row.plot(dates, numTable[twoIndex,1:], marker='o')
-
-                        row.plot(dates, numTable[threeIndex,1:], marker='o')
-
-                        row.legend((numTable[oneIndex,0], numTable[twoIndex,0], numTable[threeIndex,0]))
-                        row.set_xticklabels(dates, rotation=45)
-                    #If there's an error in the graphing process, the message below is displayed
-                    except:
-                        st.write(f"{code} Cash Flow Data is Not Available" )
-
-                    tot_count += 1
-                    if len(sharecodes) == tot_count:
-                        tot_count -= 1
-
+                plt.suptitle("Cash Flow Items")
 
 
         return success, fig
