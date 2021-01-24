@@ -169,7 +169,7 @@ class ValuationCalculator():
             else:
                 result = "Lower PE = Better Value"
 
-            pe = {"Metrics":"Price to Earnings Ratio", "Values":ratioPE,"Analysis":result}
+            pe = {"Metrics":"Price to Earnings", "Values":ratioPE,"Analysis":result}
             valuation_list = valuation_list.append(pe,ignore_index=True)
 
             #Price to Sales
@@ -184,7 +184,7 @@ class ValuationCalculator():
             else:
                 result = "Lower PS = Better Value"
 
-            ps ={"Metrics":"Price to Sales Ratio", "Values":ratioPS,"Analysis":result}
+            ps ={"Metrics":"Price to Sales", "Values":ratioPS,"Analysis":result}
             valuation_list = valuation_list.append(ps,ignore_index=True)
 
             #Earnings per Share
@@ -273,7 +273,7 @@ class ValuationCalculator():
                 else:
                     result = "Check sector analysis"
 
-                pb ={"Metrics":"Price to Book Value Ratio", "Values":ratioPB,"Analysis":result}
+                pb ={"Metrics":"Price to Book Value", "Values":ratioPB,"Analysis":result}
                 valuation_list = valuation_list.append(pb,ignore_index=True)
 
                 #Return on assets: https://www.ruleoneinvesting.com/blog/how-to-invest/important-financial-metrics-that-we-use/
@@ -318,7 +318,7 @@ class ValuationCalculator():
                 else:
                     result = "Average"
 
-                db ={"Metrics":"Debt to Equity Ratio", "Values":ratioDE,"Analysis":result}
+                db ={"Metrics":"Debt to Equity", "Values":ratioDE,"Analysis":result}
                 valuation_list = valuation_list.append(db,ignore_index=True)
 
 
@@ -358,7 +358,7 @@ class ValuationCalculator():
                 else:
                     result = "Average"
 
-                pcf ={"Metrics":"Price to Free Cash Flow Ratio", "Values":ratioPCF, "Analysis":result}
+                pcf ={"Metrics":"Price to Free Cash Flow", "Values":ratioPCF, "Analysis":result}
                 valuation_list = valuation_list.append(pcf,ignore_index=True)
 
                 #Free Cash Flow to Sales ratio as a percentage

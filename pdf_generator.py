@@ -264,15 +264,15 @@ class PDFGenerator():
         for i, analysis in enumerate(analyses):
             table, valuation_list, names = fa.get_financials(code, subject, analysis, finOptions, True)
 
-            self.set_font("Helvetica",size = 9)
+            self.set_font("Helvetica",style = "B",size = 9)
 
             #If there's a list of company names, print them out in full for each table
             if isinstance(names, list):
                 for company in names:
                     self.cell(100, 5, txt = f"{company[0]}",
-                             ln = 0, align = 'L')
+                             ln = 0, align = 'C')
                     self.cell(100, 5, txt = f"{company[1]}",
-                             ln = 1, align = 'R')
+                             ln = 1, align = 'C')
             else:
                 self.cell(200, 5, txt = f"{names}",
                          ln = 1, align = 'C')
