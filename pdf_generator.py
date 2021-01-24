@@ -9,6 +9,7 @@ from financial_analysis import FinancialAnalyser as fa
 
 class PDFGenerator():
 
+    #Takes 6 arguments for the different operations
     def generate_report(code,time_period, detail, subject, options, finOptions):
         # save FPDF() class into a
         class MyFPDF(FPDF, HTMLMixin):
