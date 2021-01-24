@@ -6,6 +6,7 @@ import text_analysis as ta
 import request_web as rwb
 #Importing custom library for financial analysis
 from financial_analysis import FinancialAnalyser as fa
+import os
 
 class PDFGenerator():
 
@@ -248,8 +249,10 @@ class PDFGenerator():
         col_width = epw/5
 
         if "Graphs" in finOptions:
+            #https://discuss.streamlit.io/t/creating-a-pdf-file-generator/7613/10
             self.image(f"tmpfile.{code}_{analysis}.png", w = epw  )
             self.add_page()
+            os.remove(f"tmpfile.{code}_{analysis}.png") 
 
 
         #Can't Text Wrap with this particular module, without breaking the table
