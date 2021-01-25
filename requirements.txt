@@ -97,9 +97,11 @@ pandas==1.1.4
 pandocfilters==1.4.3
 parsel==1.6.0
 parso==0.7.1
+patsy==0.5.1
 pathtools==0.1.2
 pickleshare==0.7.5
 Pillow==8.0.1
+pmdarima==1.8.0
 prometheus-client==0.8.0
 prompt-toolkit==3.0.8
 Protego==0.1.16
@@ -139,6 +141,7 @@ six==1.15.0
 smart-open==3.0.0
 smmap==3.0.4
 soupsieve==2.0.1
+statsmodels-0.12.1
 sqlitedict==1.7.0
 streamlit==0.70.0
 tabulate==0.8.7
