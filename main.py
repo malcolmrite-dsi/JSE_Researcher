@@ -37,7 +37,7 @@ def main():
     section = st.sidebar.radio('Sections to Visit',("Help",'Company Background','Latest SENS', 'News Analyser', 'Financial Analysis','Stock Price Forecasting', 'PDF Report Generator'))
 
     if section == 'Help':
-
+        #https://pmbaumgartner.github.io/streamlitopedia/markdown.html
         htmlmarkdown= read_markdown_file('README.md')
         st.markdown(htmlmarkdown, unsafe_allow_html=True)
 
