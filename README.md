@@ -5,6 +5,10 @@ This project was done by Malcolm Wright (me). This project references a lot of o
 
 The share code of the desired comapny you want to research can be quickly searched online.
 
+Enjoy!
+
+Ths Site: https://share.streamlit.io/malcolmrite-dsi/jse_researcher/main/main.py
+
 ## Instructions
 ### Company Background
 
