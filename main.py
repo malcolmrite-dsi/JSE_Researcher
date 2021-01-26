@@ -10,7 +10,7 @@ from stock_price_forecaster import StockForecaster as sf
 import numpy as np
 import re
 import streamlit as st
-
+from pathlib import Path
 import text_analysis as ta
 from Company_List_Generator import CompanyGenerator
 
@@ -20,7 +20,10 @@ import base64
 #https://www.profiledata.co.za/BrokerSites/BusinessLive/SENS.aspx?id=372260
 def create_download_link(val, filename):
     b64 = base64.b64encode(val)  # val looks like b'...'
-    return f'<a href="data:application/octet-stream;base64,{b64.decode()}" download="{filename}_Report.pdf">Click to Download Report</a>'
+    return f'<a href="data:application/octet-stream;base64,{b64.decode()}" download="{filename}_Report.pdf">Click to Download Report</a>'\
+
+def read_markdown_file(markdown_file):
+    return Path(markdown_file).read_text()
 
 def main():
 
@@ -30,8 +33,13 @@ def main():
     st.sidebar.image("Web_Images/DSI-logo.jpg", use_column_width = True)
     st.sidebar.subheader("Africa DSI Final Project")
     st.sidebar.write("By Malcolm Wright")
-    st.sidebar.write("App is still under development, some of the features don't work.")
-    section = st.sidebar.radio('Sections to Visit',('Company Background','Latest SENS', 'News Analyser', 'Financial Analysis','Stock Price Forecasting', 'PDF Report Generator'))
+
+    section = st.sidebar.radio('Sections to Visit',("Help",'Company Background','Latest SENS', 'News Analyser', 'Financial Analysis','Stock Price Forecasting', 'PDF Report Generator'))
+
+    if section == 'Help':
+
+        htmlmarkdown= read_markdown_file('README.md')
+        st.markdown(htmlmarkdown, unsafe_allow_html=True)
 
     if section == 'Company Background':
         st.subheader('Company Background Summary')
