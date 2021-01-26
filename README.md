@@ -8,6 +8,7 @@ The share code of the desired comapny you want to research can be quickly search
 Enjoy!
 
 Ths Site: https://share.streamlit.io/malcolmrite-dsi/jse_researcher/main/main.py
+Git Repository: https://github.com/malcolmrite-dsi/JSE_Researcher
 
 ## Instructions
 ### Company Background
