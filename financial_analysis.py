@@ -404,7 +404,7 @@ class FinancialAnalyser():
             table = []
             valuation_list = []
             names = []
-            icb = rwb.SensGetter.get_icb_code("Sector_List.csv")
+            icb = rwb.SensGetter.get_icb_code("Company_Lists/Sector_List.csv")
 
             value = icb.iloc[(icb["Share Code"]==code).argmax(),1]
             sharecodes = rwb.FinancialGetter.get_sector_data(value)
@@ -603,7 +603,7 @@ class FinancialAnalyser():
                         #If there's an error in the graphing process, the message below is displayed
                         except Exception as inst:
                             st.write(f"{code} {analysis} Data is Not Available" )
-                            
+
 
                         tot_count += 1
                         if len(sharecodes) == tot_count:
