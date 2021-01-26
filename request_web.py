@@ -267,6 +267,16 @@ class SensGetter():
 
         return comp_list
 
+    #https://stackoverflow.com/questions/18327624/find-elements-index-in-pandas-series
+    def find_share_name(code, filename):
+        name_list = []
+        companies = pd.read_csv(filename)
+
+        index = (companies["Share Code"] == code).argmax()
+        name = companies["Short Name"].iloc[index]
+
+        return name
+
     def get_icb_code(filename):
 
         sectors = pd.read_csv(filename)

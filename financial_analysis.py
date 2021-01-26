@@ -403,6 +403,7 @@ class FinancialAnalyser():
         if subject == "Sector":
             table = []
             valuation_list = []
+            names = []
             icb = rwb.SensGetter.get_icb_code("Sector_List.csv")
 
             value = icb.iloc[(icb["Share Code"]==code).argmax(),1]
@@ -525,6 +526,7 @@ class FinancialAnalyser():
 
     def plot_chart(fig, ax, sharecodes, analysis):
 
+        #Gettining the table and other important stuff for the chosen stock
         table, dates, currency, name = FinancialAnalyser.get_financial_info(sharecodes, analysis)
         table = table.to_numpy()
         #Get the plotting indexes for the graphs
@@ -574,7 +576,10 @@ class FinancialAnalyser():
                 success = False
 
         else:
+            #Defining the row length based on the number of shares in the sector
             rowLen = int(len(sharecodes) // 5) + 1
+
+            #This is the standard number of columns for the graph
             colLen = 5
             rowCount = 1
             colCount = 1
@@ -582,20 +587,23 @@ class FinancialAnalyser():
 
             tot_count = 0
 
+            #If there are more than five shares in the sector
             if rowLen > 1:
                 fig, ax = plt.subplots(nrows = rowLen, ncols = colLen, figsize=(16, 16))
 
                 for row in ax:
                     for col in row:
+                        #Get the share code of the company to be graphed next on the sector list
                         code = sharecodes[tot_count]
                         try:
+                            #Display the share code on the graph, to identify the info
                             col.title.set_text(code)
                             currency, dates, name = FinancialAnalyser.plot_chart(col, col, code, analysis)
                             col.set_xticklabels(dates, rotation=45)
                         #If there's an error in the graphing process, the message below is displayed
                         except Exception as inst:
                             st.write(f"{code} {analysis} Data is Not Available" )
-                            st.write(f"{inst}" )
+                            
 
                         tot_count += 1
                         if len(sharecodes) == tot_count:
