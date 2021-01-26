@@ -141,7 +141,7 @@ six==1.15.0
 smart-open==3.0.0
 smmap==3.0.4
 soupsieve==2.0.1
-statsmodels-0.12.1
+
 sqlitedict==1.7.0
 streamlit==0.70.0
 tabulate==0.8.7
