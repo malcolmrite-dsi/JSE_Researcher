@@ -19,8 +19,8 @@ import base64
 #http://196.30.126.229/V2/Controls/News/NewsList/NLJSONdata.aspx?jsecode=IMP&type=sens&filter=&search=
 #https://www.profiledata.co.za/BrokerSites/BusinessLive/SENS.aspx?id=372260
 def create_download_link(val, filename):
-    b64 = base64.b64encode(val)  # val looks like b'...'
-    return f'<a href="data:application/octet-stream;base64,{b64.decode()}" download="{filename}_Report.pdf">Click to Download Report</a>'
+    b64 = base64.b64encode(val).decode()  # val looks like b'...'
+    return f'<a href="data:application/octet-stream;base64,{b64}" download="{filename}_Report.pdf">Click to Download Report</a>'
 
 def read_markdown_file(markdown_file):
     return Path(markdown_file).read_text()
@@ -154,7 +154,7 @@ def main():
             with st.spinner("Generating Report....This May Take Some Time..."):
 
                 report = pg.generate_report(sharecode,time_period, detail, subject, options, finOptions)
-                
+
 
                 st.markdown(create_download_link(report, sharecode), unsafe_allow_html=True)
 
