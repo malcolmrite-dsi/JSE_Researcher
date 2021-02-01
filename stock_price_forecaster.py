@@ -23,7 +23,7 @@ class StockForecaster():
             #Get the number of days to predict from the slider on the app
             predictDays = StockForecaster.get_predict_days(duration)
             #calculate number of days since the model was updated
-            buffer = int(dayNum) - 13
+            buffer = int(dayNum) + 30 - 13
 
             mod = pickle.load(pkl)
 
