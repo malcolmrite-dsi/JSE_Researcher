@@ -1,7 +1,7 @@
 from fpdf import FPDF, HTMLMixin
 
 import text_analysis as ta
-
+import base64
 #Importing custom library for web scraping
 import request_web as rwb
 #Importing custom library for financial analysis
@@ -60,8 +60,10 @@ class PDFGenerator():
 
         # save the pdf with name .pdf
         report = pdf.output(dest="S").encode("latin-1")
+        b64 = base64.b64encode(report)  # val looks like b'...'
         my_bar.progress(100)
-        return report
+        return f'<a href="data:application/octet-stream;base64,{b64.decode()}" download="{code}.pdf">Download Your Report</a>'
+
 
     def create_intro_page(self, code, options):
 
