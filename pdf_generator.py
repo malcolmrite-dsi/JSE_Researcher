@@ -59,11 +59,12 @@ class PDFGenerator():
 
 
         # save the pdf with name .pdf
-        report = pdf.output(name = f'{code}.pdf',dest="F").encode("latin-1")
-        
+        report = pdf.output(dest="S").encode("latin-1")
+
+
         b64 = base64.b64encode(report)  # val looks like b'...'
         my_bar.progress(100)
-        return f'<a href="{code}.pdf" download>Download Your Report</a>'
+        return f'<a href="data:application/octet-stream;base64,{b64.decode()}" download="{code}.pdf">Download file</a>'
 
 
     def create_intro_page(self, code, options):

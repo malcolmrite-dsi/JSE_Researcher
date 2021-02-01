@@ -155,10 +155,10 @@ def main():
 
                 report = pg.generate_report(sharecode,time_period, detail, subject, options, finOptions)
 
+                download_link_ph = st.empty()
+                download_link_ph.markdown(report, unsafe_allow_html=True)
 
-                st.markdown(report, unsafe_allow_html=True)
 
-                
 
 
 if __name__ == '__main__':
