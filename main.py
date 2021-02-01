@@ -13,7 +13,7 @@ import streamlit as st
 from pathlib import Path
 import text_analysis as ta
 from Company_List_Generator import CompanyGenerator
-
+import os
 from pdf_generator import PDFGenerator as pg
 import base64
 #http://196.30.126.229/V2/Controls/News/NewsList/NLJSONdata.aspx?jsecode=IMP&type=sens&filter=&search=
@@ -158,6 +158,7 @@ def main():
 
                 st.markdown(report, unsafe_allow_html=True)
 
+                
 
 
 if __name__ == '__main__':
