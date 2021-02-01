@@ -149,14 +149,15 @@ def main():
         else:
             finOptions = ["Graphs", "Valuation Metrics"]
 
-        generate = st.button("Generate Report")
-        if sharecode != "" and generate:
-            with st.spinner("Generating Report....This May Take Some Time..."):
+        st.subheader("PDF Download link is currently broken. Sorry for the inconvenience")
+        #generate = st.button("Generate Report")
+        #if sharecode != "" and generate:
+            #with st.spinner("Generating Report....This May Take Some Time..."):
 
-                report = pg.generate_report(sharecode,time_period, detail, subject, options, finOptions)
+                #report = pg.generate_report(sharecode,time_period, detail, subject, options, finOptions)
 
-                download_link_ph = st.empty()
-                download_link_ph.markdown(report, unsafe_allow_html=True)
+                #download_link_ph = st.empty()
+                #download_link_ph.markdown(report, unsafe_allow_html=True)
 
 
 
