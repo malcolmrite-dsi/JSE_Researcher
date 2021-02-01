@@ -154,7 +154,7 @@ def main():
             with st.spinner("Generating Report....This May Take Some Time..."):
 
                 report = pg.generate_report(sharecode,time_period, detail, subject, options, finOptions)
-                html = create_download_link(report.encode("latin-1"), sharecode)
+                html = create_download_link(report, sharecode)
 
                 st.markdown(html, unsafe_allow_html=True)
 

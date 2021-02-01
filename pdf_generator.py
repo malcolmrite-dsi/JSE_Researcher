@@ -59,7 +59,7 @@ class PDFGenerator():
 
 
         # save the pdf with name .pdf
-        report = pdf.output(dest="S")
+        report = pdf.output(dest="S").encode("latin-1")
         my_bar.progress(100)
         return report
 
