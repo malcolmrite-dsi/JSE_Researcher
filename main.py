@@ -149,7 +149,7 @@ def main():
         else:
             finOptions = ["Graphs", "Valuation Metrics"]
 
-        st.subheader("PDF Download link is currently broken. Sorry for the inconvenience")
+        st.subheader("1. When the link is shown, please right click it. 2. Then click save link as... to save the report in your desired local storage location.")
         generate = st.button("Generate Report")
         if sharecode != "" and generate:
             with st.spinner("Generating Report....This May Take Some Time..."):
